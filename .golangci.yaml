@@ -1,7 +1,7 @@
 # golangci-lint configuration for ReleasePilot
 # https://golangci-lint.run/usage/configuration/
 
-version: 2
+version: "2"
 
 run:
   timeout: 5m
@@ -46,11 +46,11 @@ linters:
     - nolintlint        # Disabled until other linters are fixed
     - govet             # TODO: Re-enable after fixing shadow issues
 
-formatters-settings:
+formatters.settings:
   gofmt:
     simplify: true
 
-linters-settings:
+linters.settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
@@ -111,18 +111,5 @@ linters-settings:
       - name: redefines-builtin-id
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 50
   max-same-issues: 10
-  new: false
-
-  exclude-rules:
-    # Main files can have init functions
-    - path: main\.go
-      linters:
-        - gochecknoinits
-
-    # Generated protobuf files
-    - path: \.pb\.go$
-      linters:
-        - all
