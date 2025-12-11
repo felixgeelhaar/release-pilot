@@ -17,7 +17,8 @@ formatters:
     gofmt:
       simplify: true
     goimports:
-      local-prefixes: github.com/felixgeelhaar/release-pilot
+      local-prefixes:
+        - github.com/felixgeelhaar/release-pilot
 
 linters:
   enable:
