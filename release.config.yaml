@@ -1,8 +1,8 @@
 ai:
-    enabled: false
+    enabled: true
     provider: openai
-    model: gpt-4
-    apikey: ""
+    model: gpt-4o
+    apikey: ${OPENAI_API_KEY}
     baseurl: ""
     tone: professional
     audience: developers
