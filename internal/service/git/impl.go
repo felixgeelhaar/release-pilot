@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -186,10 +187,29 @@ func (s *ServiceImpl) IsClean(_ context.Context) (bool, error) {
 
 	status, err := s.worktree.Status()
 	if err != nil {
-		return false, rperrors.GitWrap(err, op, "failed to get worktree status")
+		// Fallback to git CLI for compatibility with newer git index formats
+		// (go-git has issues with index version 4 and certain extensions)
+		return s.isCleanFallback()
 	}
 
 	return status.IsClean(), nil
+}
+
+// isCleanFallback uses git CLI to check working tree status when go-git fails.
+func (s *ServiceImpl) isCleanFallback() (bool, error) {
+	repoRoot, err := s.GetRepositoryRoot(context.Background())
+	if err != nil {
+		return false, err
+	}
+
+	cmd := exec.Command("git", "status", "--porcelain")
+	cmd.Dir = repoRoot
+	output, err := cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("git status failed: %w", err)
+	}
+
+	return len(strings.TrimSpace(string(output))) == 0, nil
 }
 
 // GetCommit returns a specific commit by hash.
