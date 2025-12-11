@@ -134,9 +134,23 @@ Modern software teams face significant friction in the release process:
 
 - Core commands (`init`, `version`, `notes`, `publish`)
 - Basic AI integration (OpenAI)
-- GitHub & npm plugins
-- Slack notification plugin
+- GitHub & GitLab plugins
+- Slack & Discord notification plugins
+- Jira integration plugin
 - JSON/YAML config
+
+### Package Registry Plugins (Language Support)
+
+- npm (JavaScript/Node.js)
+- PyPI (Python)
+- crates.io (Rust)
+- Maven Central (Java)
+- NuGet (.NET)
+- RubyGems (Ruby)
+- Packagist (PHP)
+- Go Modules (Go)
+- Hex (Elixir/Erlang)
+- Cargo (Rust alternative registries)
 
 ### Nice-to-Have
 
@@ -144,6 +158,10 @@ Modern software teams face significant friction in the release process:
 - Local AI runner (Ollama)
 - LaunchNotes plugin
 - Tone/style templates for AI
+- Homebrew formula publishing
+- Docker Hub / Container registries
+- Chocolatey (Windows)
+- APT/YUM repository publishing
 
 ---
 
@@ -159,10 +177,92 @@ Modern software teams face significant friction in the release process:
 
 ## 10. Future Opportunities
 
+### Platform & Infrastructure
 - SaaS dashboard for managing drafts, release analytics
 - Plugin marketplace or registry
 - Visual editor for release planning & summaries
 - Auto-localization of notes (AI-generated translations)
+- Self-hosted enterprise server option
+- Webhook system for custom integrations
+
+### Product Announcement & Changelog Platforms
+- AnnounceKit - Changelog widget with user reactions
+- Canny - Feedback + changelog + public roadmaps
+- Beamer - In-app notifications and changelog widget
+- Headway - Changelog widget with segmentation
+- ProductBoard - Product management releases
+- ReleaseNotes.io - Embeddable changelog
+
+### Communication & Collaboration
+- Microsoft Teams - Enterprise notifications
+- Intercom - Customer messaging releases
+- Zendesk - Support ticket release updates
+- Linear - Modern issue tracking
+- Asana - Project management
+- Monday.com - Work OS integration
+- ClickUp - All-in-one project management
+- Basecamp - Team communication
+
+### Documentation & Knowledge Base
+- GitBook - Developer documentation
+- ReadMe - API documentation updates
+- Docusaurus - Static docs generation
+
+### Social & Marketing
+- Twitter/X - Social announcements
+- LinkedIn - Professional updates
+- Dev.to - Developer community posts
+- Hashnode - Developer blogging
+- Medium - Blog publishing
+- Reddit - Subreddit announcements
+- Hacker News - Show HN submissions
+
+### Email & Newsletter
+- SendGrid - Transactional email
+- Mailchimp - Newsletter campaigns
+- Postmark - Developer email
+- Resend - Modern email API
+- ConvertKit - Creator newsletters
+
+### Monitoring & Observability
+- Sentry - Error tracking release annotations
+- Datadog - APM release markers
+- New Relic - Performance release tracking
+- PagerDuty - Incident management
+- Opsgenie - Alert management
+- Grafana - Dashboard annotations
+
+### CI/CD Integration
+- Jenkins - Pipeline triggers
+- CircleCI - Build integration
+- Travis CI - CI automation
+- Azure DevOps - Microsoft CI/CD
+- Bitbucket Pipelines - Atlassian CI/CD
+- Buildkite - CI/CD at scale
+
+### Cloud & Deployment Platforms
+- AWS CodePipeline - AWS release management
+- Google Cloud Deploy - GCP delivery
+- Azure Release Pipelines - Microsoft releases
+- Vercel - Frontend deployments
+- Netlify - JAMstack deployments
+- Railway - App deployment
+- Fly.io - Edge deployments
+- Render - Cloud platform
+- Heroku - PaaS deployments
+
+### Mobile App Stores
+- Apple App Store Connect - iOS releases
+- Google Play Console - Android releases
+- TestFlight - iOS beta distribution
+- Firebase App Distribution - Cross-platform beta
+
+### Feature Flags & Experimentation
+- LaunchDarkly - Feature flag management
+- Split.io - Feature delivery
+- Flagsmith - Open source flags
+- Unleash - Feature toggles
+- GrowthBook - A/B testing
 
 ---
 
@@ -247,15 +347,92 @@ ReleasePilot will adopt a freemium model to drive adoption while monetizing adva
 - Plugin bundles (e.g., Product Ops Pack, Enterprise Pack)
 - Developer plugin marketplace with revenue share model
 
-**Examples:**
+**Complete Plugin Tier Matrix:**
 
-| Plugin      | Free | Pro | SaaS |
-| ----------- | ---- | --- | ---- |
-| GitHub/npm  | ✅   | ✅  | ✅   |
-| Slack       | ✅   | ✅  | ✅   |
-| Jira        | ❌   | ✅  | ✅   |
-| LaunchNotes | ❌   | ✅  | ✅   |
-| Email       | ❌   | ✅  | ✅   |
+| Plugin | Free | Pro | SaaS | Notes |
+| ------ | ---- | --- | ---- | ----- |
+| **Version Control** |||||
+| GitHub Releases | ✅ | ✅ | ✅ | Core integration |
+| GitLab Releases | ✅ | ✅ | ✅ | Core integration |
+| Bitbucket | ✅ | ✅ | ✅ | |
+| **Package Registries** |||||
+| npm (JavaScript) | ✅ | ✅ | ✅ | Core - language agnostic |
+| PyPI (Python) | ✅ | ✅ | ✅ | Core - language agnostic |
+| crates.io (Rust) | ✅ | ✅ | ✅ | Core - language agnostic |
+| Maven Central (Java) | ✅ | ✅ | ✅ | Core - language agnostic |
+| NuGet (.NET) | ✅ | ✅ | ✅ | Core - language agnostic |
+| RubyGems (Ruby) | ✅ | ✅ | ✅ | Core - language agnostic |
+| Packagist (PHP) | ✅ | ✅ | ✅ | Core - language agnostic |
+| Go Modules (Go) | ✅ | ✅ | ✅ | Core - language agnostic |
+| Hex (Elixir) | ✅ | ✅ | ✅ | Core - language agnostic |
+| Homebrew | ✅ | ✅ | ✅ | |
+| Docker Hub | ✅ | ✅ | ✅ | |
+| **Basic Notifications** |||||
+| Slack | ✅ | ✅ | ✅ | Core integration |
+| Discord | ✅ | ✅ | ✅ | Core integration |
+| Webhooks (generic) | ✅ | ✅ | ✅ | Custom integrations |
+| **Enterprise Notifications** |||||
+| Microsoft Teams | ❌ | ✅ | ✅ | Enterprise focus |
+| Email (SMTP) | ❌ | ✅ | ✅ | |
+| SendGrid | ❌ | ✅ | ✅ | |
+| Postmark | ❌ | ✅ | ✅ | |
+| Mailchimp | ❌ | ✅ | ✅ | Newsletter campaigns |
+| **Issue Tracking** |||||
+| Jira | ❌ | ✅ | ✅ | Enterprise integration |
+| Linear | ❌ | ✅ | ✅ | Modern teams |
+| Asana | ❌ | ✅ | ✅ | |
+| Monday.com | ❌ | ✅ | ✅ | |
+| ClickUp | ❌ | ✅ | ✅ | |
+| **Product Announcements** |||||
+| LaunchNotes | ❌ | ✅ | ✅ | Premium changelog |
+| AnnounceKit | ❌ | ✅ | ✅ | |
+| Canny | ❌ | ✅ | ✅ | |
+| Beamer | ❌ | ✅ | ✅ | |
+| Headway | ❌ | ✅ | ✅ | |
+| **Documentation** |||||
+| Confluence | ❌ | ✅ | ✅ | Enterprise wiki |
+| Notion | ❌ | ✅ | ✅ | |
+| GitBook | ❌ | ✅ | ✅ | |
+| ReadMe | ❌ | ✅ | ✅ | API docs |
+| **Social & Marketing** |||||
+| Twitter/X | ❌ | ✅ | ✅ | Social automation |
+| LinkedIn | ❌ | ✅ | ✅ | |
+| Dev.to | ❌ | ✅ | ✅ | |
+| Medium | ❌ | ✅ | ✅ | |
+| Reddit | ❌ | ✅ | ✅ | |
+| **Customer Platforms** |||||
+| Intercom | ❌ | ❌ | ✅ | SaaS-only |
+| Zendesk | ❌ | ❌ | ✅ | SaaS-only |
+| **Monitoring & Observability** |||||
+| Sentry | ❌ | ✅ | ✅ | Release annotations |
+| Datadog | ❌ | ✅ | ✅ | |
+| New Relic | ❌ | ✅ | ✅ | |
+| Grafana | ❌ | ✅ | ✅ | |
+| PagerDuty | ❌ | ❌ | ✅ | SaaS-only |
+| Opsgenie | ❌ | ❌ | ✅ | SaaS-only |
+| **CI/CD Integration** |||||
+| Jenkins | ❌ | ✅ | ✅ | Pipeline triggers |
+| CircleCI | ❌ | ✅ | ✅ | |
+| Azure DevOps | ❌ | ✅ | ✅ | |
+| Bitbucket Pipelines | ❌ | ✅ | ✅ | |
+| **Cloud Platforms** |||||
+| Vercel | ❌ | ✅ | ✅ | Deployment triggers |
+| Netlify | ❌ | ✅ | ✅ | |
+| Railway | ❌ | ✅ | ✅ | |
+| Fly.io | ❌ | ✅ | ✅ | |
+| AWS CodePipeline | ❌ | ❌ | ✅ | Enterprise cloud |
+| Google Cloud Deploy | ❌ | ❌ | ✅ | Enterprise cloud |
+| Azure Pipelines | ❌ | ❌ | ✅ | Enterprise cloud |
+| **Mobile App Stores** |||||
+| Apple App Store Connect | ❌ | ✅ | ✅ | iOS releases |
+| Google Play Console | ❌ | ✅ | ✅ | Android releases |
+| TestFlight | ❌ | ✅ | ✅ | Beta distribution |
+| Firebase App Distribution | ❌ | ✅ | ✅ | |
+| **Feature Flags** |||||
+| LaunchDarkly | ❌ | ❌ | ✅ | SaaS integration |
+| Split.io | ❌ | ❌ | ✅ | |
+| Flagsmith | ❌ | ✅ | ✅ | Open source option |
+| Unleash | ❌ | ✅ | ✅ | Open source option |
 
 ---
 

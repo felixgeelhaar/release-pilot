@@ -8,11 +8,12 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
-	jira "github.com/andygrunwald/go-jira"
+	jira "github.com/felixgeelhaar/jirasdk"
+	"github.com/felixgeelhaar/jirasdk/core/issue"
+	"github.com/felixgeelhaar/jirasdk/core/project"
 
 	"github.com/felixgeelhaar/release-pilot/pkg/plugin"
 )
@@ -304,8 +305,8 @@ func (p *JiraPlugin) extractIssueKeys(cfg *Config, changes *plugin.CategorizedCh
 				}
 			}
 			// Also extract from referenced issues in the commit
-			for _, issue := range commit.Issues {
-				upperMatch := strings.ToUpper(issue)
+			for _, iss := range commit.Issues {
+				upperMatch := strings.ToUpper(iss)
 				if !seen[upperMatch] && re.MatchString(upperMatch) {
 					seen[upperMatch] = true
 					keys = append(keys, upperMatch)
@@ -328,33 +329,25 @@ func (p *JiraPlugin) extractIssueKeys(cfg *Config, changes *plugin.CategorizedCh
 }
 
 // createOrGetVersion creates a new version or returns existing one.
-func (p *JiraPlugin) createOrGetVersion(ctx context.Context, client *jira.Client, projectKey, versionName, description string) (*jira.Version, error) {
-	// Try to find existing version first
-	project, _, err := client.Project.GetWithContext(ctx, projectKey)
+func (p *JiraPlugin) createOrGetVersion(ctx context.Context, client *jira.Client, projectKey, versionName, description string) (*project.Version, error) {
+	// Try to find existing version first by listing project versions
+	versions, err := client.Project.ListProjectVersions(ctx, projectKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get project: %w", err)
+		return nil, fmt.Errorf("failed to list project versions: %w", err)
 	}
 
-	for _, v := range project.Versions {
+	for _, v := range versions {
 		if v.Name == versionName {
-			return &v, nil
+			return v, nil
 		}
 	}
 
-	// Convert project ID from string to int
-	projectID, err := strconv.Atoi(project.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert project ID: %w", err)
-	}
-
-	// Create new version
-	version := &jira.Version{
+	// Create new version using jirasdk
+	createdVersion, err := client.Project.CreateVersion(ctx, &project.CreateVersionInput{
 		Name:        versionName,
 		Description: description,
-		ProjectID:   projectID,
-	}
-
-	createdVersion, _, err := client.Version.CreateWithContext(ctx, version)
+		Project:     projectKey,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create version: %w", err)
 	}
@@ -366,37 +359,30 @@ func (p *JiraPlugin) createOrGetVersion(ctx context.Context, client *jira.Client
 func (p *JiraPlugin) releaseVersion(ctx context.Context, client *jira.Client, versionID string) error {
 	now := time.Now().Format("2006-01-02")
 	released := true
-	update := &jira.Version{
-		ID:          versionID,
+
+	_, err := client.Project.UpdateVersion(ctx, versionID, &project.UpdateVersionInput{
 		Released:    &released,
 		ReleaseDate: now,
-	}
-
-	_, _, err := client.Version.UpdateWithContext(ctx, update)
+	})
 	return err
 }
 
 // associateIssueWithVersion adds a fix version to an issue.
 func (p *JiraPlugin) associateIssueWithVersion(ctx context.Context, client *jira.Client, issueKey, versionName string) error {
-	update := map[string]interface{}{
-		"update": map[string]interface{}{
-			"fixVersions": []map[string]interface{}{
-				{
-					"add": map[string]string{
-						"name": versionName,
-					},
-				},
+	// Use jirasdk's Issue.Update with fixVersions field
+	return client.Issue.Update(ctx, issueKey, &issue.UpdateInput{
+		Fields: map[string]interface{}{
+			"fixVersions": []map[string]string{
+				{"name": versionName},
 			},
 		},
-	}
-
-	_, err := client.Issue.UpdateIssueWithContext(ctx, issueKey, update)
-	return err
+	})
 }
 
 // transitionIssue transitions an issue to a specified status.
 func (p *JiraPlugin) transitionIssue(ctx context.Context, client *jira.Client, issueKey, transitionName string) error {
-	transitions, _, err := client.Issue.GetTransitionsWithContext(ctx, issueKey)
+	// Get available transitions for the issue
+	transitions, err := client.Workflow.GetTransitions(ctx, issueKey, nil)
 	if err != nil {
 		return fmt.Errorf("failed to get transitions: %w", err)
 	}
@@ -414,17 +400,17 @@ func (p *JiraPlugin) transitionIssue(ctx context.Context, client *jira.Client, i
 		return fmt.Errorf("transition '%s' not found for issue %s", transitionName, issueKey)
 	}
 
-	_, err = client.Issue.DoTransitionWithContext(ctx, issueKey, transitionID)
-	return err
+	// Perform the transition using jirasdk's Issue.DoTransition
+	return client.Issue.DoTransition(ctx, issueKey, &issue.TransitionInput{
+		Transition: &issue.Transition{ID: transitionID},
+	})
 }
 
 // addComment adds a comment to an issue.
 func (p *JiraPlugin) addComment(ctx context.Context, client *jira.Client, issueKey, body string) error {
-	comment := &jira.Comment{
+	_, err := client.Issue.AddComment(ctx, issueKey, &issue.AddCommentInput{
 		Body: body,
-	}
-
-	_, _, err := client.Issue.AddCommentWithContext(ctx, issueKey, comment)
+	})
 	return err
 }
 
@@ -554,7 +540,7 @@ func isPrivateIP(ip net.IP) bool {
 	return false
 }
 
-// getClient creates a Jira client.
+// getClient creates a Jira client using jirasdk.
 func (p *JiraPlugin) getClient(cfg *Config) (*jira.Client, error) {
 	baseURL := cfg.BaseURL
 	if baseURL == "" {
@@ -573,6 +559,9 @@ func (p *JiraPlugin) getClient(cfg *Config) (*jira.Client, error) {
 	if username == "" {
 		username = os.Getenv("JIRA_USERNAME")
 	}
+	if username == "" {
+		username = os.Getenv("JIRA_EMAIL")
+	}
 
 	token := cfg.Token
 	if token == "" {
@@ -583,16 +572,16 @@ func (p *JiraPlugin) getClient(cfg *Config) (*jira.Client, error) {
 	}
 
 	if username == "" || token == "" {
-		return nil, fmt.Errorf("Jira username and token are required (set JIRA_USERNAME and JIRA_TOKEN env vars or configure in plugin)")
+		return nil, fmt.Errorf("Jira username and token are required (set JIRA_USERNAME/JIRA_EMAIL and JIRA_TOKEN/JIRA_API_TOKEN env vars or configure in plugin)")
 	}
 
-	// Create basic auth transport
-	tp := jira.BasicAuthTransport{
-		Username: username,
-		Password: token,
-	}
-
-	client, err := jira.NewClient(tp.Client(), baseURL)
+	// Create client using jirasdk's functional options pattern
+	client, err := jira.NewClient(
+		jira.WithBaseURL(baseURL),
+		jira.WithAPIToken(username, token),
+		jira.WithTimeout(30*time.Second),
+		jira.WithMaxRetries(3),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Jira client: %w", err)
 	}
@@ -708,6 +697,9 @@ func (p *JiraPlugin) Validate(ctx context.Context, config map[string]any) (*plug
 	}
 	if username == "" {
 		username = os.Getenv("JIRA_USERNAME")
+	}
+	if username == "" {
+		username = os.Getenv("JIRA_EMAIL")
 	}
 
 	if token == "" {
