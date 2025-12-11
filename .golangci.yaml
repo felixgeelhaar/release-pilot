@@ -1,25 +1,28 @@
 # golangci-lint configuration for ReleasePilot
 # https://golangci-lint.run/usage/configuration/
 
+version: 2
+
 run:
   timeout: 5m
   issues-exit-code: 1
   tests: true
   modules-download-mode: readonly
 
+formatters:
+  enable:
+    - gofmt
+
 linters:
   enable:
     # Default linters
-    - gosimple
+    - staticcheck  # Includes gosimple and unused in v2
     - ineffassign
-    - staticcheck
-    - unused
 
     # Additional recommended linters
     - bodyclose
     - contextcheck
     - errname
-    - gofmt
     - goprintffuncname
     - misspell
     - noctx
@@ -43,6 +46,10 @@ linters:
     - nolintlint        # Disabled until other linters are fixed
     - govet             # TODO: Re-enable after fixing shadow issues
 
+formatters-settings:
+  gofmt:
+    simplify: true
+
 linters-settings:
   errcheck:
     check-type-assertions: true
@@ -52,9 +59,6 @@ linters-settings:
     enable-all: true
     disable:
       - fieldalignment  # Too strict for readability
-
-  gofmt:
-    simplify: true
 
   goimports:
     local-prefixes: github.com/felixgeelhaar/release-pilot
@@ -122,14 +126,3 @@ issues:
     - path: \.pb\.go$
       linters:
         - all
-
-severity:
-  default-severity: warning
-  case-sensitive: false
-  rules:
-    - linters:
-        - gosec
-      severity: error
-    - linters:
-        - errcheck
-      severity: error
