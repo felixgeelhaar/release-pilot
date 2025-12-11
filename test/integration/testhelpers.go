@@ -35,8 +35,8 @@ func NewTestRepo(t testing.TB) *TestRepo {
 		},
 	}
 
-	// Initialize git repository
-	repo.Git("init")
+	// Initialize git repository with main as the default branch
+	repo.Git("init", "--initial-branch=main")
 	repo.Git("config", "user.email", "test@example.com")
 	repo.Git("config", "user.name", "Test User")
 
