@@ -202,7 +202,7 @@ func (m *Manager) allowedPluginDirs() []string {
 func validatePluginName(name string) error {
 	// Only allow alphanumeric characters, hyphens, and underscores
 	for _, r := range name {
-		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_') {
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '-' && r != '_' {
 			return fmt.Errorf("plugin name contains invalid character: %q", r)
 		}
 	}

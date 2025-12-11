@@ -304,7 +304,7 @@ func (p *PackagistPlugin) validateConfig(cfg *Config) error {
 			if parsedURL.Scheme == "http" && (hostname == "localhost" || strings.HasPrefix(hostname, "127.")) {
 				// Allow http for local testing
 			} else {
-				return fmt.Errorf("Packagist URL must use HTTPS")
+				return fmt.Errorf("packagist URL must use HTTPS")
 			}
 		}
 	}
