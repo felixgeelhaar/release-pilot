@@ -12,9 +12,12 @@ run:
 formatters:
   enable:
     - gofmt
+    - goimports
   settings:
     gofmt:
       simplify: true
+    goimports:
+      local-prefixes: github.com/felixgeelhaar/release-pilot
 
 linters:
   enable:
@@ -58,9 +61,6 @@ linters:
       enable-all: true
       disable:
         - fieldalignment  # Too strict for readability
-
-    goimports:
-      local-prefixes: github.com/felixgeelhaar/release-pilot
 
     gosec:
       severity: medium
