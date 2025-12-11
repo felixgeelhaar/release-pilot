@@ -1,6 +1,8 @@
 module github.com/felixgeelhaar/release-pilot
 
-go 1.24.11
+go 1.24.6
+
+toolchain go1.24.11
 
 require (
 	github.com/Masterminds/semver/v3 v3.4.0
