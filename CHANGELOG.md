@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-12-11
+
+### Features
+
+- **plugins:** add language package registry plugins (365c2b4)
+- **plugins:** add package registry plugins for MVP Nice-to-Have scope (caf0198)
+- **jira:** migrate to jirasdk and expand PRD plugin roadmap (dd8f9cd)
+
+### Bug Fixes
+
+- **ci:** downgrade to Go 1.24.11 for golangci-lint compatibility (9343328)
+- **security:** upgrade go-jira to fix jwt vulnerabilities (f7ab5d7)
+- **ci:** fix test failures and security scan SARIF upload (ad39fbd)
+- resolve lint errors and formatting issues (e6e6d04)
+
+
 ## [1.0.0] - 2025-12-11
 
 ### ⚠ BREAKING CHANGES

@@ -51,7 +51,16 @@ output:
     quiet: false
     logfile: ""
     loglevel: info
-plugins: []
+plugins:
+    - name: github
+      enabled: true
+      path: /Users/felixgeelhaar/.release-pilot/plugins/github
+      config:
+        owner: felixgeelhaar
+        repo: release-pilot
+        draft: false
+        prerelease: false
+        generate_release_notes: false
 versioning:
     strategy: conventional
     tagprefix: v
