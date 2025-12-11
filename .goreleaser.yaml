@@ -34,10 +34,10 @@ builds:
       - -X main.date={{.Date}}
     mod_timestamp: "{{ .CommitTimestamp }}"
 
-  # GitHub plugin
-  - id: release-pilot-github
+  # GitHub plugin - named to match installer expectations: {plugin}_{os}_{arch}
+  - id: plugin-github
     main: ./plugins/github
-    binary: release-pilot-github
+    binary: github_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
     env:
       - CGO_ENABLED=0
     goos:
@@ -52,11 +52,12 @@ builds:
         goarch: arm64
     ldflags:
       - -s -w
+    no_unique_dist_dir: true
 
   # npm plugin
-  - id: release-pilot-npm
+  - id: plugin-npm
     main: ./plugins/npm
-    binary: release-pilot-npm
+    binary: npm_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
     env:
       - CGO_ENABLED=0
     goos:
@@ -71,11 +72,12 @@ builds:
         goarch: arm64
     ldflags:
       - -s -w
+    no_unique_dist_dir: true
 
   # Slack plugin
-  - id: release-pilot-slack
+  - id: plugin-slack
     main: ./plugins/slack
-    binary: release-pilot-slack
+    binary: slack_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
     env:
       - CGO_ENABLED=0
     goos:
@@ -90,14 +92,93 @@ builds:
         goarch: arm64
     ldflags:
       - -s -w
+    no_unique_dist_dir: true
+
+  # GitLab plugin
+  - id: plugin-gitlab
+    main: ./plugins/gitlab
+    binary: gitlab_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+    no_unique_dist_dir: true
+
+  # Discord plugin
+  - id: plugin-discord
+    main: ./plugins/discord
+    binary: discord_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+    no_unique_dist_dir: true
+
+  # Jira plugin
+  - id: plugin-jira
+    main: ./plugins/jira
+    binary: jira_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+    no_unique_dist_dir: true
+
+  # LaunchNotes plugin
+  - id: plugin-launchnotes
+    main: ./plugins/launchnotes
+    binary: launchnotes_{{ .Os }}_{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+    no_unique_dist_dir: true
 
 archives:
-  - id: default
+  # Main CLI archive (without plugins)
+  - id: main
     builds:
       - release-pilot
-      - release-pilot-github
-      - release-pilot-npm
-      - release-pilot-slack
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
@@ -155,6 +236,15 @@ release:
   draft: false
   prerelease: auto
   mode: append
+  # Publish individual plugin binaries as release assets
+  extra_files:
+    - glob: dist/github_*
+    - glob: dist/gitlab_*
+    - glob: dist/npm_*
+    - glob: dist/slack_*
+    - glob: dist/discord_*
+    - glob: dist/jira_*
+    - glob: dist/launchnotes_*
   header: |
     ## ReleasePilot {{ .Tag }}
 
@@ -188,9 +278,9 @@ brews:
       system "#{bin}/release-pilot", "--version"
     install: |
       bin.install "release-pilot"
-      bin.install "release-pilot-github"
-      bin.install "release-pilot-npm"
-      bin.install "release-pilot-slack"
+    caveats: |
+      Plugins can be installed using:
+        release-pilot plugin install <name>
 
 nfpms:
   - id: packages
@@ -206,13 +296,6 @@ nfpms:
       - rpm
       - apk
     bindir: /usr/bin
-    contents:
-      - src: ./release-pilot-github
-        dst: /usr/bin/release-pilot-github
-      - src: ./release-pilot-npm
-        dst: /usr/bin/release-pilot-npm
-      - src: ./release-pilot-slack
-        dst: /usr/bin/release-pilot-slack
 
 dockers:
   - image_templates:

@@ -21,9 +21,10 @@ const (
 
 // Manager coordinates plugin management operations.
 type Manager struct {
-	registry   *RegistryService
-	pluginDir  string
-	cacheDir   string
+	registry     *RegistryService
+	installer    *Installer
+	pluginDir    string
+	cacheDir     string
 	manifestPath string
 }
 
@@ -47,6 +48,7 @@ func NewManager() (*Manager, error) {
 
 	return &Manager{
 		registry:     NewRegistryService(cacheDir),
+		installer:    NewInstaller(pluginDir),
 		pluginDir:    pluginDir,
 		cacheDir:     cacheDir,
 		manifestPath: filepath.Join(pluginDir, ManifestFile),
@@ -219,4 +221,131 @@ func (m *Manager) getOrCreateManifest() (*Manifest, error) {
 		return nil, err
 	}
 	return manifest, nil
+}
+
+// Install installs a plugin from the registry.
+func (m *Manager) Install(ctx context.Context, name string) error {
+	// Get plugin info from registry
+	registry, err := m.registry.Fetch(ctx, false)
+	if err != nil {
+		return fmt.Errorf("failed to fetch registry: %w", err)
+	}
+
+	pluginInfo, err := registry.GetPlugin(name)
+	if err != nil {
+		return err
+	}
+
+	// Check if already installed
+	manifest, err := m.getOrCreateManifest()
+	if err != nil {
+		return fmt.Errorf("failed to load manifest: %w", err)
+	}
+
+	for _, installed := range manifest.Installed {
+		if installed.Name == name {
+			return fmt.Errorf("plugin %q is already installed (version %s)", name, installed.Version)
+		}
+	}
+
+	// Install the plugin
+	installed, err := m.installer.Install(ctx, *pluginInfo)
+	if err != nil {
+		return fmt.Errorf("failed to install plugin: %w", err)
+	}
+
+	// Update manifest
+	manifest.Installed = append(manifest.Installed, *installed)
+	if err := m.saveManifest(manifest); err != nil {
+		// Clean up installed binary on manifest save failure
+		_ = m.installer.Uninstall(*installed)
+		return fmt.Errorf("failed to update manifest: %w", err)
+	}
+
+	return nil
+}
+
+// Uninstall removes a plugin.
+func (m *Manager) Uninstall(ctx context.Context, name string) error {
+	manifest, err := m.loadManifest()
+	if err != nil {
+		return fmt.Errorf("failed to load manifest: %w", err)
+	}
+
+	// Find the plugin
+	var found bool
+	var toUninstall InstalledPlugin
+	var updatedInstalled []InstalledPlugin
+
+	for _, installed := range manifest.Installed {
+		if installed.Name == name {
+			found = true
+			toUninstall = installed
+		} else {
+			updatedInstalled = append(updatedInstalled, installed)
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("plugin %q is not installed", name)
+	}
+
+	// Uninstall the binary
+	if err := m.installer.Uninstall(toUninstall); err != nil {
+		return fmt.Errorf("failed to uninstall plugin: %w", err)
+	}
+
+	// Update manifest
+	manifest.Installed = updatedInstalled
+	if err := m.saveManifest(manifest); err != nil {
+		return fmt.Errorf("failed to update manifest: %w", err)
+	}
+
+	return nil
+}
+
+// Enable enables an installed plugin.
+func (m *Manager) Enable(ctx context.Context, name string) error {
+	manifest, err := m.loadManifest()
+	if err != nil {
+		return fmt.Errorf("failed to load manifest: %w", err)
+	}
+
+	var found bool
+	for i := range manifest.Installed {
+		if manifest.Installed[i].Name == name {
+			found = true
+			manifest.Installed[i].Enabled = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("plugin %q is not installed", name)
+	}
+
+	return m.saveManifest(manifest)
+}
+
+// Disable disables an installed plugin.
+func (m *Manager) Disable(ctx context.Context, name string) error {
+	manifest, err := m.loadManifest()
+	if err != nil {
+		return fmt.Errorf("failed to load manifest: %w", err)
+	}
+
+	var found bool
+	for i := range manifest.Installed {
+		if manifest.Installed[i].Name == name {
+			found = true
+			manifest.Installed[i].Enabled = false
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("plugin %q is not installed", name)
+	}
+
+	return m.saveManifest(manifest)
 }

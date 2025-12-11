@@ -88,8 +88,8 @@ Key features:
 
 Get started with 'release-pilot init' to set up your project.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// Skip config loading for init and version commands
-		if cmd.Name() == "init" || cmd.Name() == "version" || cmd.Name() == "help" {
+		// Skip config loading for commands that don't need it
+		if cmd.Name() == "init" || cmd.Name() == "version" || cmd.Name() == "help" || cmd.Name() == "plugin" || cmd.Parent() != nil && cmd.Parent().Name() == "plugin" {
 			return nil
 		}
 		return initConfig()

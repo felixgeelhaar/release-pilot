@@ -43,6 +43,42 @@ from the registry.`,
 	RunE: runPluginList,
 }
 
+var pluginInstallCmd = &cobra.Command{
+	Use:   "install <name>",
+	Short: "Install a plugin",
+	Long: `Install a plugin from the registry.
+
+Downloads the plugin binary for your platform and makes it available
+for use. Plugins must be enabled after installation with 'plugin enable'.`,
+	Args: cobra.ExactArgs(1),
+	RunE: runPluginInstall,
+}
+
+var pluginUninstallCmd = &cobra.Command{
+	Use:     "uninstall <name>",
+	Aliases: []string{"remove"},
+	Short:   "Uninstall a plugin",
+	Long:    `Remove an installed plugin and its associated files.`,
+	Args:    cobra.ExactArgs(1),
+	RunE:    runPluginUninstall,
+}
+
+var pluginEnableCmd = &cobra.Command{
+	Use:   "enable <name>",
+	Short: "Enable a plugin",
+	Long:  `Enable an installed plugin to use it in releases.`,
+	Args:  cobra.ExactArgs(1),
+	RunE:  runPluginEnable,
+}
+
+var pluginDisableCmd = &cobra.Command{
+	Use:   "disable <name>",
+	Short: "Disable a plugin",
+	Long:  `Disable a plugin without uninstalling it.`,
+	Args:  cobra.ExactArgs(1),
+	RunE:  runPluginDisable,
+}
+
 var (
 	pluginListAvailable bool
 	pluginListRefresh   bool
@@ -54,6 +90,10 @@ func init() {
 
 	// Add subcommands to plugin
 	pluginCmd.AddCommand(pluginListCmd)
+	pluginCmd.AddCommand(pluginInstallCmd)
+	pluginCmd.AddCommand(pluginUninstallCmd)
+	pluginCmd.AddCommand(pluginEnableCmd)
+	pluginCmd.AddCommand(pluginDisableCmd)
 
 	// Flags for plugin list
 	pluginListCmd.Flags().BoolVarP(&pluginListAvailable, "available", "a", false, "Show all available plugins from registry")
@@ -231,4 +271,89 @@ func getCategoryTitle(category string) string {
 	default:
 		return strings.Title(category)
 	}
+}
+
+func runPluginInstall(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
+	pluginName := args[0]
+
+	mgr, err := manager.NewManager()
+	if err != nil {
+		return fmt.Errorf("failed to create plugin manager: %w", err)
+	}
+
+	fmt.Printf("Installing plugin %q...\n", pluginName)
+
+	if err := mgr.Install(ctx, pluginName); err != nil {
+		return fmt.Errorf("failed to install plugin: %w", err)
+	}
+
+	fmt.Println()
+	printSuccess(fmt.Sprintf("Plugin %q installed successfully", pluginName))
+	fmt.Println()
+	fmt.Println("To use this plugin:")
+	fmt.Printf("  1. Enable it: release-pilot plugin enable %s\n", pluginName)
+	fmt.Printf("  2. Configure it in release.config.yaml\n")
+
+	return nil
+}
+
+func runPluginUninstall(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
+	pluginName := args[0]
+
+	mgr, err := manager.NewManager()
+	if err != nil {
+		return fmt.Errorf("failed to create plugin manager: %w", err)
+	}
+
+	fmt.Printf("Uninstalling plugin %q...\n", pluginName)
+
+	if err := mgr.Uninstall(ctx, pluginName); err != nil {
+		return fmt.Errorf("failed to uninstall plugin: %w", err)
+	}
+
+	printSuccess(fmt.Sprintf("Plugin %q uninstalled successfully", pluginName))
+
+	return nil
+}
+
+func runPluginEnable(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
+	pluginName := args[0]
+
+	mgr, err := manager.NewManager()
+	if err != nil {
+		return fmt.Errorf("failed to create plugin manager: %w", err)
+	}
+
+	if err := mgr.Enable(ctx, pluginName); err != nil {
+		return fmt.Errorf("failed to enable plugin: %w", err)
+	}
+
+	printSuccess(fmt.Sprintf("Plugin %q enabled", pluginName))
+	fmt.Println()
+	fmt.Println("Next steps:")
+	fmt.Println("  1. Configure the plugin in release.config.yaml")
+	fmt.Println("  2. Run release-pilot commands to use the plugin")
+
+	return nil
+}
+
+func runPluginDisable(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
+	pluginName := args[0]
+
+	mgr, err := manager.NewManager()
+	if err != nil {
+		return fmt.Errorf("failed to create plugin manager: %w", err)
+	}
+
+	if err := mgr.Disable(ctx, pluginName); err != nil {
+		return fmt.Errorf("failed to disable plugin: %w", err)
+	}
+
+	printSuccess(fmt.Sprintf("Plugin %q disabled", pluginName))
+
+	return nil
 }
