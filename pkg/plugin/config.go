@@ -39,6 +39,20 @@ func (p *ConfigParser) GetString(field string, envVars ...string) string {
 	return ""
 }
 
+// GetStringDefault extracts a string field with a default value.
+// Falls back to environment variables before using the default.
+func (p *ConfigParser) GetStringDefault(field string, defaultVal string, envVars ...string) string {
+	if v, ok := p.raw[field].(string); ok && v != "" {
+		return v
+	}
+	for _, envVar := range envVars {
+		if val := os.Getenv(envVar); val != "" {
+			return val
+		}
+	}
+	return defaultVal
+}
+
 // GetBool extracts a boolean field.
 // Returns false if the field is not found or not a boolean.
 func (p *ConfigParser) GetBool(field string) bool {
@@ -142,13 +156,15 @@ func (p *ConfigParser) Raw() map[string]any {
 
 // ValidationBuilder provides a fluent API for building validation responses.
 type ValidationBuilder struct {
-	errors []ValidationError
+	errors   []ValidationError
+	warnings []string
 }
 
 // NewValidationBuilder creates a new validation builder.
 func NewValidationBuilder() *ValidationBuilder {
 	return &ValidationBuilder{
-		errors: make([]ValidationError, 0),
+		errors:   make([]ValidationError, 0),
+		warnings: make([]string, 0),
 	}
 }
 
@@ -160,6 +176,18 @@ func (vb *ValidationBuilder) AddError(field, message, code string) *ValidationBu
 		Code:    code,
 	})
 	return vb
+}
+
+// AddWarning adds a validation warning. Warnings don't fail validation
+// but indicate potential issues that should be addressed.
+func (vb *ValidationBuilder) AddWarning(field, message string) *ValidationBuilder {
+	vb.warnings = append(vb.warnings, fmt.Sprintf("%s: %s", field, message))
+	return vb
+}
+
+// Warnings returns the recorded validation warnings.
+func (vb *ValidationBuilder) Warnings() []string {
+	return vb.warnings
 }
 
 // AddRequired adds a "required" validation error for a field.
