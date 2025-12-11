@@ -220,8 +220,6 @@ func (p *CratesPlugin) publishCrate(ctx context.Context, cfg *Config, releaseCtx
 
 	if dryRun {
 		// Use cargo publish --dry-run for verification
-		args = append(args, "--dry-run")
-
 		return &plugin.ExecuteResponse{
 			Success: true,
 			Message: "Would publish to crates.io",

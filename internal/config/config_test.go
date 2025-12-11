@@ -118,8 +118,8 @@ func TestValidationError(t *testing.T) {
 		t.Error("New ValidationError should not have errors")
 	}
 
-	ve.Add("error %d", 1)
-	ve.Add("error %d", 2)
+	ve.Addf("error %d", 1)
+	ve.Addf("error %d", 2)
 
 	if !ve.HasErrors() {
 		t.Error("ValidationError should have errors after Add")

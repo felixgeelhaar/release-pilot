@@ -620,10 +620,10 @@ func (p *LinuxPkgPlugin) addToAPTRepo(ctx context.Context, cfg *Config, debPath 
 	if distribution == "" {
 		distribution = "stable"
 	}
-	component := cfg.APTRepository.Component
-	if component == "" {
-		component = "main"
-	}
+	// component := cfg.APTRepository.Component
+	// if component == "" {
+	// 	component = "main"
+	// }
 
 	// Use reprepro if available
 	cmd := exec.CommandContext(ctx, "reprepro",

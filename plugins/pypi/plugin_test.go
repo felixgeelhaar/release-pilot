@@ -235,7 +235,7 @@ description = "A test package"
 	}
 
 	// Test actual update
-	result, err = p.updatePyprojectVersion(pyprojectPath, "1.0.0", false)
+	_, err = p.updatePyprojectVersion(pyprojectPath, "1.0.0", false)
 	if err != nil {
 		t.Fatalf("update failed: %v", err)
 	}
