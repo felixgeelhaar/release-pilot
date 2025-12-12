@@ -273,17 +273,19 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=MIT"
 
-sboms:
-  - artifacts: archive
+# sboms disabled - syft not available in CI
+# sboms:
+#   - artifacts: archive
 
-signs:
-  - cmd: cosign
-    signature: "${artifact}.sig"
-    certificate: "${artifact}.pem"
-    args:
-      - "sign-blob"
-      - "--output-signature=${signature}"
-      - "--output-certificate=${certificate}"
-      - "${artifact}"
-      - "--yes"
-    artifacts: checksum
+# signs disabled - cosign not available in CI
+# signs:
+#   - cmd: cosign
+#     signature: "${artifact}.sig"
+#     certificate: "${artifact}.pem"
+#     args:
+#       - "sign-blob"
+#       - "--output-signature=${signature}"
+#       - "--output-certificate=${certificate}"
+#       - "${artifact}"
+#       - "--yes"
+#     artifacts: checksum
