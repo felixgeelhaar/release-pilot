@@ -40,10 +40,14 @@ jobs:
       - name: Build release artifacts
         run: make release-build
 
+      - name: Install GitHub plugin for release
+        run: |
+          mkdir -p ~/.release-pilot/plugins
+          cp dist/github_linux_x86_64 ~/.release-pilot/plugins/github
+          chmod +x ~/.release-pilot/plugins/github
+
       - name: Release with ReleasePilot Action
         uses: felixgeelhaar/release-pilot-action@v1
-        env:
-          RELEASE_PILOT_PLUGINS: ${{ github.workspace }}/dist
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           command: full
