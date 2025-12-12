@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/felixgeelhaar/release-pilot/pkg/plugin"
 )
@@ -199,8 +199,7 @@ func (p *GitLabPlugin) createRelease(ctx context.Context, cfg *Config, releaseCt
 				lt := gitlab.LinkTypeValue(link.LinkType)
 				linkType = &lt
 			} else {
-				//nolint:staticcheck // SA1019: Using deprecated SDK until migration to gitlab.com/gitlab-org/api/client-go
-				linkType = gitlab.LinkType(gitlab.OtherLinkType)
+				linkType = gitlab.Ptr(gitlab.OtherLinkType)
 			}
 
 			releaseLink := &gitlab.ReleaseAssetLinkOptions{
@@ -309,8 +308,6 @@ func validateAssetPath(assetPath string) (string, error) {
 }
 
 // uploadAsset uploads a release asset to GitLab's generic package registry.
-//
-//nolint:staticcheck // SA1019: Using deprecated SDK until migration to gitlab.com/gitlab-org/api/client-go
 func (p *GitLabPlugin) uploadAsset(ctx context.Context, client *gitlab.Client, projectID, tagName, assetPath string) (*plugin.Artifact, error) {
 	// Validate and sanitize the asset path to prevent path traversal
 	validatedPath, err := validateAssetPath(assetPath)
@@ -381,8 +378,6 @@ func (p *GitLabPlugin) uploadAsset(ctx context.Context, client *gitlab.Client, p
 }
 
 // getClient creates a GitLab client.
-//
-//nolint:staticcheck // SA1019: Using deprecated SDK until migration to gitlab.com/gitlab-org/api/client-go
 func (p *GitLabPlugin) getClient(cfg *Config) (*gitlab.Client, error) {
 	token := cfg.Token
 	if token == "" {
@@ -409,7 +404,6 @@ func (p *GitLabPlugin) getClient(cfg *Config) (*gitlab.Client, error) {
 		baseURL += "api/v4/"
 	}
 
-	//nolint:staticcheck // SA1019: Using deprecated SDK until migration to gitlab.com/gitlab-org/api/client-go
 	return gitlab.NewClient(token, gitlab.WithBaseURL(baseURL))
 }
 
