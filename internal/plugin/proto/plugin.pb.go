@@ -239,7 +239,7 @@ func (x *PluginInfo) GetConfigSchema() string {
 type ExecuteRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// hook is the hook being executed.
-	Hook Hook `protobuf:"varint,1,opt,name=hook,proto3,enum=plugin.Hook" json:"hook,omitempty"`
+	Hook Hook `protobuf:"varint,1,opt,name=hook,proto3,enum=releasepilot.Hook" json:"hook,omitempty"`
 	// config is the plugin-specific configuration as JSON.
 	Config string `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
 	// context contains the release context.
@@ -1022,7 +1022,7 @@ var File_internal_plugin_proto_plugin_proto protoreflect.FileDescriptor
 
 const file_internal_plugin_proto_plugin_proto_rawDesc = "" +
 	"\n" +
-	"\"internal/plugin/proto/plugin.proto\x12\x06plugin\"\a\n" +
+	"\"internal/plugin/proto/plugin.proto\x12\freleasepilot\"\a\n" +
 	"\x05Empty\"\xaf\x01\n" +
 	"\n" +
 	"PluginInfo\x12\x12\n" +
@@ -1031,18 +1031,18 @@ const file_internal_plugin_proto_plugin_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x16\n" +
 	"\x06author\x18\x04 \x01(\tR\x06author\x12\x14\n" +
 	"\x05hooks\x18\x05 \x03(\tR\x05hooks\x12#\n" +
-	"\rconfig_schema\x18\x06 \x01(\tR\fconfigSchema\"\x95\x01\n" +
-	"\x0eExecuteRequest\x12 \n" +
-	"\x04hook\x18\x01 \x01(\x0e2\f.plugin.HookR\x04hook\x12\x16\n" +
-	"\x06config\x18\x02 \x01(\tR\x06config\x120\n" +
-	"\acontext\x18\x03 \x01(\v2\x16.plugin.ReleaseContextR\acontext\x12\x17\n" +
-	"\adry_run\x18\x04 \x01(\bR\x06dryRun\"\xa5\x01\n" +
+	"\rconfig_schema\x18\x06 \x01(\tR\fconfigSchema\"\xa1\x01\n" +
+	"\x0eExecuteRequest\x12&\n" +
+	"\x04hook\x18\x01 \x01(\x0e2\x12.releasepilot.HookR\x04hook\x12\x16\n" +
+	"\x06config\x18\x02 \x01(\tR\x06config\x126\n" +
+	"\acontext\x18\x03 \x01(\v2\x1c.releasepilot.ReleaseContextR\acontext\x12\x17\n" +
+	"\adry_run\x18\x04 \x01(\bR\x06dryRun\"\xab\x01\n" +
 	"\x0fExecuteResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x14\n" +
 	"\x05error\x18\x03 \x01(\tR\x05error\x12\x18\n" +
-	"\aoutputs\x18\x04 \x01(\tR\aoutputs\x12.\n" +
-	"\tartifacts\x18\x05 \x03(\v2\x10.plugin.ArtifactR\tartifacts\"\xc9\x04\n" +
+	"\aoutputs\x18\x04 \x01(\tR\aoutputs\x124\n" +
+	"\tartifacts\x18\x05 \x03(\v2\x16.releasepilot.ArtifactR\tartifacts\"\xd5\x04\n" +
 	"\x0eReleaseContext\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x12)\n" +
 	"\x10previous_version\x18\x02 \x01(\tR\x0fpreviousVersion\x12\x19\n" +
@@ -1056,20 +1056,20 @@ const file_internal_plugin_proto_plugin_proto_rawDesc = "" +
 	"commit_sha\x18\t \x01(\tR\tcommitSha\x12\x1c\n" +
 	"\tchangelog\x18\n" +
 	" \x01(\tR\tchangelog\x12#\n" +
-	"\rrelease_notes\x18\v \x01(\tR\freleaseNotes\x124\n" +
-	"\achanges\x18\f \x01(\v2\x1a.plugin.CategorizedChangesR\achanges\x12I\n" +
-	"\venvironment\x18\r \x03(\v2'.plugin.ReleaseContext.EnvironmentEntryR\venvironment\x1a>\n" +
+	"\rrelease_notes\x18\v \x01(\tR\freleaseNotes\x12:\n" +
+	"\achanges\x18\f \x01(\v2 .releasepilot.CategorizedChangesR\achanges\x12O\n" +
+	"\venvironment\x18\r \x03(\v2-.releasepilot.ReleaseContext.EnvironmentEntryR\venvironment\x1a>\n" +
 	"\x10EnvironmentEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8e\x03\n" +
-	"\x12CategorizedChanges\x126\n" +
-	"\bfeatures\x18\x01 \x03(\v2\x1a.plugin.ConventionalCommitR\bfeatures\x120\n" +
-	"\x05fixes\x18\x02 \x03(\v2\x1a.plugin.ConventionalCommitR\x05fixes\x126\n" +
-	"\bbreaking\x18\x03 \x03(\v2\x1a.plugin.ConventionalCommitR\bbreaking\x12<\n" +
-	"\vperformance\x18\x04 \x03(\v2\x1a.plugin.ConventionalCommitR\vperformance\x126\n" +
-	"\brefactor\x18\x05 \x03(\v2\x1a.plugin.ConventionalCommitR\brefactor\x12.\n" +
-	"\x04docs\x18\x06 \x03(\v2\x1a.plugin.ConventionalCommitR\x04docs\x120\n" +
-	"\x05other\x18\a \x03(\v2\x1a.plugin.ConventionalCommitR\x05other\"\x9b\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb8\x03\n" +
+	"\x12CategorizedChanges\x12<\n" +
+	"\bfeatures\x18\x01 \x03(\v2 .releasepilot.ConventionalCommitR\bfeatures\x126\n" +
+	"\x05fixes\x18\x02 \x03(\v2 .releasepilot.ConventionalCommitR\x05fixes\x12<\n" +
+	"\bbreaking\x18\x03 \x03(\v2 .releasepilot.ConventionalCommitR\bbreaking\x12B\n" +
+	"\vperformance\x18\x04 \x03(\v2 .releasepilot.ConventionalCommitR\vperformance\x12<\n" +
+	"\brefactor\x18\x05 \x03(\v2 .releasepilot.ConventionalCommitR\brefactor\x124\n" +
+	"\x04docs\x18\x06 \x03(\v2 .releasepilot.ConventionalCommitR\x04docs\x126\n" +
+	"\x05other\x18\a \x03(\v2 .releasepilot.ConventionalCommitR\x05other\"\x9b\x02\n" +
 	"\x12ConventionalCommit\x12\x12\n" +
 	"\x04hash\x18\x01 \x01(\tR\x04hash\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x14\n" +
@@ -1089,10 +1089,10 @@ const file_internal_plugin_proto_plugin_proto_rawDesc = "" +
 	"\x04size\x18\x04 \x01(\x03R\x04size\x12\x1a\n" +
 	"\bchecksum\x18\x05 \x01(\tR\bchecksum\")\n" +
 	"\x0fValidateRequest\x12\x16\n" +
-	"\x06config\x18\x01 \x01(\tR\x06config\"Y\n" +
+	"\x06config\x18\x01 \x01(\tR\x06config\"_\n" +
 	"\x10ValidateResponse\x12\x14\n" +
-	"\x05valid\x18\x01 \x01(\bR\x05valid\x12/\n" +
-	"\x06errors\x18\x02 \x03(\v2\x17.plugin.ValidationErrorR\x06errors\"U\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x125\n" +
+	"\x06errors\x18\x02 \x03(\v2\x1d.releasepilot.ValidationErrorR\x06errors\"U\n" +
 	"\x0fValidationError\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x12\n" +
@@ -1113,11 +1113,11 @@ const file_internal_plugin_proto_plugin_proto_rawDesc = "" +
 	"\x10HOOK_PRE_PUBLISH\x10\v\x12\x15\n" +
 	"\x11HOOK_POST_PUBLISH\x10\f\x12\x13\n" +
 	"\x0fHOOK_ON_SUCCESS\x10\r\x12\x11\n" +
-	"\rHOOK_ON_ERROR\x10\x0e2\xb1\x01\n" +
-	"\x06Plugin\x12,\n" +
-	"\aGetInfo\x12\r.plugin.Empty\x1a\x12.plugin.PluginInfo\x12:\n" +
-	"\aExecute\x12\x16.plugin.ExecuteRequest\x1a\x17.plugin.ExecuteResponse\x12=\n" +
-	"\bValidate\x12\x17.plugin.ValidateRequest\x1a\x18.plugin.ValidateResponseB>Z<github.com/felixgeelhaar/release-pilot/internal/plugin/protob\x06proto3"
+	"\rHOOK_ON_ERROR\x10\x0e2\xd5\x01\n" +
+	"\x06Plugin\x128\n" +
+	"\aGetInfo\x12\x13.releasepilot.Empty\x1a\x18.releasepilot.PluginInfo\x12F\n" +
+	"\aExecute\x12\x1c.releasepilot.ExecuteRequest\x1a\x1d.releasepilot.ExecuteResponse\x12I\n" +
+	"\bValidate\x12\x1d.releasepilot.ValidateRequest\x1a\x1e.releasepilot.ValidateResponseB>Z<github.com/felixgeelhaar/release-pilot/internal/plugin/protob\x06proto3"
 
 var (
 	file_internal_plugin_proto_plugin_proto_rawDescOnce sync.Once
@@ -1134,40 +1134,40 @@ func file_internal_plugin_proto_plugin_proto_rawDescGZIP() []byte {
 var file_internal_plugin_proto_plugin_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_internal_plugin_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_internal_plugin_proto_plugin_proto_goTypes = []any{
-	(Hook)(0),                  // 0: plugin.Hook
-	(*Empty)(nil),              // 1: plugin.Empty
-	(*PluginInfo)(nil),         // 2: plugin.PluginInfo
-	(*ExecuteRequest)(nil),     // 3: plugin.ExecuteRequest
-	(*ExecuteResponse)(nil),    // 4: plugin.ExecuteResponse
-	(*ReleaseContext)(nil),     // 5: plugin.ReleaseContext
-	(*CategorizedChanges)(nil), // 6: plugin.CategorizedChanges
-	(*ConventionalCommit)(nil), // 7: plugin.ConventionalCommit
-	(*Artifact)(nil),           // 8: plugin.Artifact
-	(*ValidateRequest)(nil),    // 9: plugin.ValidateRequest
-	(*ValidateResponse)(nil),   // 10: plugin.ValidateResponse
-	(*ValidationError)(nil),    // 11: plugin.ValidationError
-	nil,                        // 12: plugin.ReleaseContext.EnvironmentEntry
+	(Hook)(0),                  // 0: releasepilot.Hook
+	(*Empty)(nil),              // 1: releasepilot.Empty
+	(*PluginInfo)(nil),         // 2: releasepilot.PluginInfo
+	(*ExecuteRequest)(nil),     // 3: releasepilot.ExecuteRequest
+	(*ExecuteResponse)(nil),    // 4: releasepilot.ExecuteResponse
+	(*ReleaseContext)(nil),     // 5: releasepilot.ReleaseContext
+	(*CategorizedChanges)(nil), // 6: releasepilot.CategorizedChanges
+	(*ConventionalCommit)(nil), // 7: releasepilot.ConventionalCommit
+	(*Artifact)(nil),           // 8: releasepilot.Artifact
+	(*ValidateRequest)(nil),    // 9: releasepilot.ValidateRequest
+	(*ValidateResponse)(nil),   // 10: releasepilot.ValidateResponse
+	(*ValidationError)(nil),    // 11: releasepilot.ValidationError
+	nil,                        // 12: releasepilot.ReleaseContext.EnvironmentEntry
 }
 var file_internal_plugin_proto_plugin_proto_depIdxs = []int32{
-	0,  // 0: plugin.ExecuteRequest.hook:type_name -> plugin.Hook
-	5,  // 1: plugin.ExecuteRequest.context:type_name -> plugin.ReleaseContext
-	8,  // 2: plugin.ExecuteResponse.artifacts:type_name -> plugin.Artifact
-	6,  // 3: plugin.ReleaseContext.changes:type_name -> plugin.CategorizedChanges
-	12, // 4: plugin.ReleaseContext.environment:type_name -> plugin.ReleaseContext.EnvironmentEntry
-	7,  // 5: plugin.CategorizedChanges.features:type_name -> plugin.ConventionalCommit
-	7,  // 6: plugin.CategorizedChanges.fixes:type_name -> plugin.ConventionalCommit
-	7,  // 7: plugin.CategorizedChanges.breaking:type_name -> plugin.ConventionalCommit
-	7,  // 8: plugin.CategorizedChanges.performance:type_name -> plugin.ConventionalCommit
-	7,  // 9: plugin.CategorizedChanges.refactor:type_name -> plugin.ConventionalCommit
-	7,  // 10: plugin.CategorizedChanges.docs:type_name -> plugin.ConventionalCommit
-	7,  // 11: plugin.CategorizedChanges.other:type_name -> plugin.ConventionalCommit
-	11, // 12: plugin.ValidateResponse.errors:type_name -> plugin.ValidationError
-	1,  // 13: plugin.Plugin.GetInfo:input_type -> plugin.Empty
-	3,  // 14: plugin.Plugin.Execute:input_type -> plugin.ExecuteRequest
-	9,  // 15: plugin.Plugin.Validate:input_type -> plugin.ValidateRequest
-	2,  // 16: plugin.Plugin.GetInfo:output_type -> plugin.PluginInfo
-	4,  // 17: plugin.Plugin.Execute:output_type -> plugin.ExecuteResponse
-	10, // 18: plugin.Plugin.Validate:output_type -> plugin.ValidateResponse
+	0,  // 0: releasepilot.ExecuteRequest.hook:type_name -> releasepilot.Hook
+	5,  // 1: releasepilot.ExecuteRequest.context:type_name -> releasepilot.ReleaseContext
+	8,  // 2: releasepilot.ExecuteResponse.artifacts:type_name -> releasepilot.Artifact
+	6,  // 3: releasepilot.ReleaseContext.changes:type_name -> releasepilot.CategorizedChanges
+	12, // 4: releasepilot.ReleaseContext.environment:type_name -> releasepilot.ReleaseContext.EnvironmentEntry
+	7,  // 5: releasepilot.CategorizedChanges.features:type_name -> releasepilot.ConventionalCommit
+	7,  // 6: releasepilot.CategorizedChanges.fixes:type_name -> releasepilot.ConventionalCommit
+	7,  // 7: releasepilot.CategorizedChanges.breaking:type_name -> releasepilot.ConventionalCommit
+	7,  // 8: releasepilot.CategorizedChanges.performance:type_name -> releasepilot.ConventionalCommit
+	7,  // 9: releasepilot.CategorizedChanges.refactor:type_name -> releasepilot.ConventionalCommit
+	7,  // 10: releasepilot.CategorizedChanges.docs:type_name -> releasepilot.ConventionalCommit
+	7,  // 11: releasepilot.CategorizedChanges.other:type_name -> releasepilot.ConventionalCommit
+	11, // 12: releasepilot.ValidateResponse.errors:type_name -> releasepilot.ValidationError
+	1,  // 13: releasepilot.Plugin.GetInfo:input_type -> releasepilot.Empty
+	3,  // 14: releasepilot.Plugin.Execute:input_type -> releasepilot.ExecuteRequest
+	9,  // 15: releasepilot.Plugin.Validate:input_type -> releasepilot.ValidateRequest
+	2,  // 16: releasepilot.Plugin.GetInfo:output_type -> releasepilot.PluginInfo
+	4,  // 17: releasepilot.Plugin.Execute:output_type -> releasepilot.ExecuteResponse
+	10, // 18: releasepilot.Plugin.Validate:output_type -> releasepilot.ValidateResponse
 	16, // [16:19] is the sub-list for method output_type
 	13, // [13:16] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name
