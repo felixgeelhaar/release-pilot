@@ -557,7 +557,7 @@ func isPrivateIP(ip net.IP) bool {
 func (p *JiraPlugin) getClient(cfg *Config) (*jira.Client, error) {
 	baseURL := cfg.BaseURL
 	if baseURL == "" {
-		return nil, fmt.Errorf("Jira base URL is required")
+		return nil, fmt.Errorf("jira base URL is required")
 	}
 
 	// Validate URL for SSRF protection
@@ -585,7 +585,7 @@ func (p *JiraPlugin) getClient(cfg *Config) (*jira.Client, error) {
 	}
 
 	if username == "" || token == "" {
-		return nil, fmt.Errorf("Jira username and token are required (set JIRA_USERNAME/JIRA_EMAIL and JIRA_TOKEN/JIRA_API_TOKEN env vars or configure in plugin)")
+		return nil, fmt.Errorf("jira username and token are required (set JIRA_USERNAME/JIRA_EMAIL and JIRA_TOKEN/JIRA_API_TOKEN env vars or configure in plugin)")
 	}
 
 	// Create client using jirasdk's functional options pattern

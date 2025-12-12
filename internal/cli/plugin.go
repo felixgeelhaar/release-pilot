@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/felixgeelhaar/release-pilot/internal/plugin/manager"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
+	"github.com/felixgeelhaar/release-pilot/internal/plugin/manager"
 )
 
 var pluginCmd = &cobra.Command{
@@ -308,7 +311,7 @@ func getCategoryTitle(category string) string {
 	case "container":
 		return "Containers"
 	default:
-		return strings.Title(category)
+		return cases.Title(language.English).String(category)
 	}
 }
 

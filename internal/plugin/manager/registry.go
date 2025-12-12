@@ -63,11 +63,8 @@ func (r *RegistryService) Fetch(ctx context.Context, forceRefresh bool) (*Regist
 		return nil, fmt.Errorf("failed to fetch registry: %w", err)
 	}
 
-	// Update cache
-	if err := r.saveToCache(cachePath, registry); err != nil {
-		// Log but don't fail if cache save fails
-		// TODO: Add logging
-	}
+	// Update cache (ignore errors - cache is optional)
+	_ = r.saveToCache(cachePath, registry)
 
 	return registry, nil
 }

@@ -58,9 +58,9 @@ type ConfigField struct {
 	// Options for enum/select fields
 	Options []string `yaml:"options,omitempty"`
 	// Validation rules
-	Pattern string `yaml:"pattern,omitempty"`
-	MinValue *int `yaml:"min_value,omitempty"`
-	MaxValue *int `yaml:"max_value,omitempty"`
+	Pattern  string `yaml:"pattern,omitempty"`
+	MinValue *int   `yaml:"min_value,omitempty"`
+	MaxValue *int   `yaml:"max_value,omitempty"`
 }
 
 // InstalledPlugin represents a plugin that is installed locally.
