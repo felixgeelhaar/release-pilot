@@ -8,8 +8,7 @@ run:
   issues-exit-code: 1
   tests: true
   modules-download-mode: readonly
-  exclude-dirs:
-    - plugins/gitlab  # Temporarily disabled - needs migration to new GitLab SDK
+  # Note: GitLab plugin directory exclusion handled via build tags
 
 formatters:
   enable:
