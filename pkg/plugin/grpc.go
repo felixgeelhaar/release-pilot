@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/felixgeelhaar/release-pilot/internal/plugin/proto"
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
 )
@@ -22,23 +23,23 @@ type GRPCPlugin struct {
 
 // GRPCServer returns the gRPC server for this plugin.
 func (p *GRPCPlugin) GRPCServer(broker *plugin.GRPCBroker, s *grpc.Server) error {
-	RegisterPluginServer(s, &GRPCServer{Impl: p.Impl})
+	proto.RegisterPluginServer(s, &GRPCServer{Impl: p.Impl})
 	return nil
 }
 
 // GRPCClient returns the gRPC client for this plugin.
 func (p *GRPCPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBroker, c *grpc.ClientConn) (interface{}, error) {
-	return &GRPCClient{client: NewPluginClient(c)}, nil
+	return &GRPCClient{client: proto.NewPluginClient(c)}, nil
 }
 
 // GRPCServer is the server-side implementation of the plugin gRPC interface.
 type GRPCServer struct {
-	UnimplementedPluginServer
+	proto.UnimplementedPluginServer
 	Impl Plugin
 }
 
 // GetInfo returns plugin metadata.
-func (s *GRPCServer) GetInfo(ctx context.Context, req *Empty) (*PluginInfo, error) {
+func (s *GRPCServer) GetInfo(ctx context.Context, req *proto.Empty) (*proto.PluginInfo, error) {
 	info := s.Impl.GetInfo()
 
 	hooks := make([]string, len(info.Hooks))
@@ -46,7 +47,7 @@ func (s *GRPCServer) GetInfo(ctx context.Context, req *Empty) (*PluginInfo, erro
 		hooks[i] = string(h)
 	}
 
-	return &PluginInfo{
+	return &proto.PluginInfo{
 		Name:         info.Name,
 		Version:      info.Version,
 		Description:  info.Description,
@@ -57,12 +58,12 @@ func (s *GRPCServer) GetInfo(ctx context.Context, req *Empty) (*PluginInfo, erro
 }
 
 // Execute runs the plugin for a given hook.
-func (s *GRPCServer) Execute(ctx context.Context, req *ExecuteRequestProto) (*ExecuteResponseProto, error) {
+func (s *GRPCServer) Execute(ctx context.Context, req *proto.ExecuteRequest) (*proto.ExecuteResponse, error) {
 	// Convert config from JSON
 	var config map[string]any
 	if req.Config != "" {
 		if err := json.Unmarshal([]byte(req.Config), &config); err != nil {
-			return &ExecuteResponseProto{
+			return &proto.ExecuteResponse{
 				Success: false,
 				Error:   "invalid config JSON: " + err.Error(),
 			}, nil
@@ -97,7 +98,7 @@ func (s *GRPCServer) Execute(ctx context.Context, req *ExecuteRequestProto) (*Ex
 		DryRun:  req.DryRun,
 	})
 	if err != nil {
-		return &ExecuteResponseProto{
+		return &proto.ExecuteResponse{
 			Success: false,
 			Error:   err.Error(),
 		}, nil
@@ -111,9 +112,9 @@ func (s *GRPCServer) Execute(ctx context.Context, req *ExecuteRequestProto) (*Ex
 	}
 
 	// Convert artifacts
-	artifacts := make([]*ArtifactProto, len(resp.Artifacts))
+	artifacts := make([]*proto.Artifact, len(resp.Artifacts))
 	for i, a := range resp.Artifacts {
-		artifacts[i] = &ArtifactProto{
+		artifacts[i] = &proto.Artifact{
 			Name:     a.Name,
 			Path:     a.Path,
 			Type:     a.Type,
@@ -122,7 +123,7 @@ func (s *GRPCServer) Execute(ctx context.Context, req *ExecuteRequestProto) (*Ex
 		}
 	}
 
-	return &ExecuteResponseProto{
+	return &proto.ExecuteResponse{
 		Success:   resp.Success,
 		Message:   resp.Message,
 		Error:     resp.Error,
@@ -132,13 +133,13 @@ func (s *GRPCServer) Execute(ctx context.Context, req *ExecuteRequestProto) (*Ex
 }
 
 // Validate validates the plugin configuration.
-func (s *GRPCServer) Validate(ctx context.Context, req *ValidateRequestProto) (*ValidateResponseProto, error) {
+func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
 	var config map[string]any
 	if req.Config != "" {
 		if err := json.Unmarshal([]byte(req.Config), &config); err != nil {
-			return &ValidateResponseProto{
+			return &proto.ValidateResponse{
 				Valid: false,
-				Errors: []*ValidationErrorProto{{
+				Errors: []*proto.ValidationError{{
 					Field:   "config",
 					Message: "invalid JSON: " + err.Error(),
 				}},
@@ -148,25 +149,25 @@ func (s *GRPCServer) Validate(ctx context.Context, req *ValidateRequestProto) (*
 
 	resp, err := s.Impl.Validate(ctx, config)
 	if err != nil {
-		return &ValidateResponseProto{
+		return &proto.ValidateResponse{
 			Valid: false,
-			Errors: []*ValidationErrorProto{{
+			Errors: []*proto.ValidationError{{
 				Field:   "",
 				Message: err.Error(),
 			}},
 		}, nil
 	}
 
-	errors := make([]*ValidationErrorProto, len(resp.Errors))
+	errors := make([]*proto.ValidationError, len(resp.Errors))
 	for i, e := range resp.Errors {
-		errors[i] = &ValidationErrorProto{
+		errors[i] = &proto.ValidationError{
 			Field:   e.Field,
 			Message: e.Message,
 			Code:    e.Code,
 		}
 	}
 
-	return &ValidateResponseProto{
+	return &proto.ValidateResponse{
 		Valid:  resp.Valid,
 		Errors: errors,
 	}, nil
@@ -174,7 +175,7 @@ func (s *GRPCServer) Validate(ctx context.Context, req *ValidateRequestProto) (*
 
 // GRPCClient is the client-side implementation of the plugin gRPC interface.
 type GRPCClient struct {
-	client PluginClient
+	client proto.PluginClient
 }
 
 // GetInfo returns plugin metadata.
@@ -183,7 +184,7 @@ func (c *GRPCClient) GetInfo() Info {
 	ctx, cancel := context.WithTimeout(context.Background(), getInfoTimeout)
 	defer cancel()
 
-	resp, err := c.client.GetInfo(ctx, &Empty{})
+	resp, err := c.client.GetInfo(ctx, &proto.Empty{})
 	if err != nil {
 		return Info{}
 	}
@@ -207,14 +208,14 @@ func (c *GRPCClient) GetInfo() Info {
 func (c *GRPCClient) Execute(ctx context.Context, req ExecuteRequest) (*ExecuteResponse, error) {
 	configJSON, _ := json.Marshal(req.Config)
 
-	protoReq := &ExecuteRequestProto{
+	protoReq := &proto.ExecuteRequest{
 		Hook:   hookToProtoHook(req.Hook),
 		Config: string(configJSON),
 		DryRun: req.DryRun,
 	}
 
 	if req.Context.Version != "" {
-		protoReq.Context = &ReleaseContextProto{
+		protoReq.Context = &proto.ReleaseContext{
 			Version:         req.Context.Version,
 			PreviousVersion: req.Context.PreviousVersion,
 			TagName:         req.Context.TagName,
@@ -268,7 +269,7 @@ func (c *GRPCClient) Execute(ctx context.Context, req ExecuteRequest) (*ExecuteR
 func (c *GRPCClient) Validate(ctx context.Context, config map[string]any) (*ValidateResponse, error) {
 	configJSON, _ := json.Marshal(config)
 
-	resp, err := c.client.Validate(ctx, &ValidateRequestProto{
+	resp, err := c.client.Validate(ctx, &proto.ValidateRequest{
 		Config: string(configJSON),
 	})
 	if err != nil {
@@ -292,77 +293,77 @@ func (c *GRPCClient) Validate(ctx context.Context, config map[string]any) (*Vali
 
 // Helper functions for converting between types
 
-func protoHookToHook(h HookProto) Hook {
+func protoHookToHook(h proto.Hook) Hook {
 	switch h {
-	case HookProto_HOOK_PRE_INIT:
+	case proto.Hook_HOOK_PRE_INIT:
 		return HookPreInit
-	case HookProto_HOOK_POST_INIT:
+	case proto.Hook_HOOK_POST_INIT:
 		return HookPostInit
-	case HookProto_HOOK_PRE_PLAN:
+	case proto.Hook_HOOK_PRE_PLAN:
 		return HookPrePlan
-	case HookProto_HOOK_POST_PLAN:
+	case proto.Hook_HOOK_POST_PLAN:
 		return HookPostPlan
-	case HookProto_HOOK_PRE_VERSION:
+	case proto.Hook_HOOK_PRE_VERSION:
 		return HookPreVersion
-	case HookProto_HOOK_POST_VERSION:
+	case proto.Hook_HOOK_POST_VERSION:
 		return HookPostVersion
-	case HookProto_HOOK_PRE_NOTES:
+	case proto.Hook_HOOK_PRE_NOTES:
 		return HookPreNotes
-	case HookProto_HOOK_POST_NOTES:
+	case proto.Hook_HOOK_POST_NOTES:
 		return HookPostNotes
-	case HookProto_HOOK_PRE_APPROVE:
+	case proto.Hook_HOOK_PRE_APPROVE:
 		return HookPreApprove
-	case HookProto_HOOK_POST_APPROVE:
+	case proto.Hook_HOOK_POST_APPROVE:
 		return HookPostApprove
-	case HookProto_HOOK_PRE_PUBLISH:
+	case proto.Hook_HOOK_PRE_PUBLISH:
 		return HookPrePublish
-	case HookProto_HOOK_POST_PUBLISH:
+	case proto.Hook_HOOK_POST_PUBLISH:
 		return HookPostPublish
-	case HookProto_HOOK_ON_SUCCESS:
+	case proto.Hook_HOOK_ON_SUCCESS:
 		return HookOnSuccess
-	case HookProto_HOOK_ON_ERROR:
+	case proto.Hook_HOOK_ON_ERROR:
 		return HookOnError
 	default:
 		return ""
 	}
 }
 
-func hookToProtoHook(h Hook) HookProto {
+func hookToProtoHook(h Hook) proto.Hook {
 	switch h {
 	case HookPreInit:
-		return HookProto_HOOK_PRE_INIT
+		return proto.Hook_HOOK_PRE_INIT
 	case HookPostInit:
-		return HookProto_HOOK_POST_INIT
+		return proto.Hook_HOOK_POST_INIT
 	case HookPrePlan:
-		return HookProto_HOOK_PRE_PLAN
+		return proto.Hook_HOOK_PRE_PLAN
 	case HookPostPlan:
-		return HookProto_HOOK_POST_PLAN
+		return proto.Hook_HOOK_POST_PLAN
 	case HookPreVersion:
-		return HookProto_HOOK_PRE_VERSION
+		return proto.Hook_HOOK_PRE_VERSION
 	case HookPostVersion:
-		return HookProto_HOOK_POST_VERSION
+		return proto.Hook_HOOK_POST_VERSION
 	case HookPreNotes:
-		return HookProto_HOOK_PRE_NOTES
+		return proto.Hook_HOOK_PRE_NOTES
 	case HookPostNotes:
-		return HookProto_HOOK_POST_NOTES
+		return proto.Hook_HOOK_POST_NOTES
 	case HookPreApprove:
-		return HookProto_HOOK_PRE_APPROVE
+		return proto.Hook_HOOK_PRE_APPROVE
 	case HookPostApprove:
-		return HookProto_HOOK_POST_APPROVE
+		return proto.Hook_HOOK_POST_APPROVE
 	case HookPrePublish:
-		return HookProto_HOOK_PRE_PUBLISH
+		return proto.Hook_HOOK_PRE_PUBLISH
 	case HookPostPublish:
-		return HookProto_HOOK_POST_PUBLISH
+		return proto.Hook_HOOK_POST_PUBLISH
 	case HookOnSuccess:
-		return HookProto_HOOK_ON_SUCCESS
+		return proto.Hook_HOOK_ON_SUCCESS
 	case HookOnError:
-		return HookProto_HOOK_ON_ERROR
+		return proto.Hook_HOOK_ON_ERROR
 	default:
-		return HookProto_HOOK_UNSPECIFIED
+		return proto.Hook_HOOK_UNSPECIFIED
 	}
 }
 
-func convertProtoChanges(c *CategorizedChangesProto) *CategorizedChanges {
+func convertProtoChanges(c *proto.CategorizedChanges) *CategorizedChanges {
 	return &CategorizedChanges{
 		Features:    convertProtoCommits(c.Features),
 		Fixes:       convertProtoCommits(c.Fixes),
@@ -374,7 +375,7 @@ func convertProtoChanges(c *CategorizedChangesProto) *CategorizedChanges {
 	}
 }
 
-func convertProtoCommits(commits []*ConventionalCommitProto) []ConventionalCommit {
+func convertProtoCommits(commits []*proto.ConventionalCommit) []ConventionalCommit {
 	result := make([]ConventionalCommit, len(commits))
 	for i, c := range commits {
 		result[i] = ConventionalCommit{
@@ -393,8 +394,8 @@ func convertProtoCommits(commits []*ConventionalCommitProto) []ConventionalCommi
 	return result
 }
 
-func convertChangesToProto(c *CategorizedChanges) *CategorizedChangesProto {
-	return &CategorizedChangesProto{
+func convertChangesToProto(c *CategorizedChanges) *proto.CategorizedChanges {
+	return &proto.CategorizedChanges{
 		Features:    convertCommitsToProto(c.Features),
 		Fixes:       convertCommitsToProto(c.Fixes),
 		Breaking:    convertCommitsToProto(c.Breaking),
@@ -405,10 +406,10 @@ func convertChangesToProto(c *CategorizedChanges) *CategorizedChangesProto {
 	}
 }
 
-func convertCommitsToProto(commits []ConventionalCommit) []*ConventionalCommitProto {
-	result := make([]*ConventionalCommitProto, len(commits))
+func convertCommitsToProto(commits []ConventionalCommit) []*proto.ConventionalCommit {
+	result := make([]*proto.ConventionalCommit, len(commits))
 	for i, c := range commits {
-		result[i] = &ConventionalCommitProto{
+		result[i] = &proto.ConventionalCommit{
 			Hash:                c.Hash,
 			Type:                c.Type,
 			Scope:               c.Scope,
