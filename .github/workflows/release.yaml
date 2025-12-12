@@ -47,16 +47,21 @@ jobs:
           chmod +x ~/.release-pilot/plugins/github
 
           # Create plugin manifest
+          PLUGIN_VERSION="main"
+          INSTALLED_AT=$(date -u +"%Y-%m-%dT%H:%M:%S.000000Z")
+          BINARY_PATH="$HOME/.release-pilot/plugins/github"
+          CHECKSUM=$(sha256sum dist/github_linux_x86_64 | awk '{print $1}')
+
           cat > ~/.release-pilot/plugins/manifest.yaml <<EOF
           version: "1.0"
           installed:
               - name: github
-                version: \${{ github.ref_name }}
-                installed_at: $(date -u +"%Y-%m-%dT%H:%M:%S.000000Z")
-                binary_path: $HOME/.release-pilot/plugins/github
-                checksum: $(sha256sum dist/github_linux_x86_64 | awk '{print \$1}')
+                version: ${PLUGIN_VERSION}
+                installed_at: ${INSTALLED_AT}
+                binary_path: ${BINARY_PATH}
+                checksum: ${CHECKSUM}
                 enabled: true
-          updated_at: $(date -u +"%Y-%m-%dT%H:%M:%S.000000Z")
+          updated_at: ${INSTALLED_AT}
           EOF
 
       - name: Release with ReleasePilot Action
