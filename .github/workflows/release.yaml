@@ -42,6 +42,8 @@ jobs:
 
       - name: Release with ReleasePilot Action
         uses: felixgeelhaar/release-pilot-action@v1
+        env:
+          RELEASE_PILOT_PLUGINS: ${{ github.workspace }}/dist
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           command: full
