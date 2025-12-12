@@ -135,9 +135,11 @@ func (m *ValidateRequestProto) Reset()         { *m = ValidateRequestProto{} }
 func (m *ValidateRequestProto) String() string { return fmt.Sprintf("Config: %s", m.Config) }
 func (m *ValidateRequestProto) ProtoMessage()  {}
 
-func (m *ValidateResponseProto) Reset()         { *m = ValidateResponseProto{} }
-func (m *ValidateResponseProto) String() string { return fmt.Sprintf("Valid: %v, Errors: %v", m.Valid, m.Errors) }
-func (m *ValidateResponseProto) ProtoMessage()  {}
+func (m *ValidateResponseProto) Reset() { *m = ValidateResponseProto{} }
+func (m *ValidateResponseProto) String() string {
+	return fmt.Sprintf("Valid: %v, Errors: %v", m.Valid, m.Errors)
+}
+func (m *ValidateResponseProto) ProtoMessage() {}
 
 func (m *ValidationErrorProto) Reset()         { *m = ValidationErrorProto{} }
 func (m *ValidationErrorProto) String() string { return fmt.Sprintf("%s: %s", m.Field, m.Message) }
@@ -159,9 +161,11 @@ func (m *CategorizedChangesProto) Reset()         { *m = CategorizedChangesProto
 func (m *CategorizedChangesProto) String() string { return "CategorizedChanges" }
 func (m *CategorizedChangesProto) ProtoMessage()  {}
 
-func (m *ConventionalCommitProto) Reset()         { *m = ConventionalCommitProto{} }
-func (m *ConventionalCommitProto) String() string { return fmt.Sprintf("%s: %s", m.Type, m.Description) }
-func (m *ConventionalCommitProto) ProtoMessage()  {}
+func (m *ConventionalCommitProto) Reset() { *m = ConventionalCommitProto{} }
+func (m *ConventionalCommitProto) String() string {
+	return fmt.Sprintf("%s: %s", m.Type, m.Description)
+}
+func (m *ConventionalCommitProto) ProtoMessage() {}
 
 func (m *ArtifactProto) Reset()         { *m = ArtifactProto{} }
 func (m *ArtifactProto) String() string { return fmt.Sprintf("Name: %s", m.Name) }

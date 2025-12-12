@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/felixgeelhaar/release-pilot/internal/plugin/proto"
 	"google.golang.org/grpc"
+
+	"github.com/felixgeelhaar/release-pilot/internal/plugin/proto"
 )
 
 func TestProtoHookToHook(t *testing.T) {

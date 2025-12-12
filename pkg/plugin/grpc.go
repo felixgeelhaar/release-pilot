@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/felixgeelhaar/release-pilot/internal/plugin/proto"
 	"github.com/hashicorp/go-plugin"
 	"google.golang.org/grpc"
+
+	"github.com/felixgeelhaar/release-pilot/internal/plugin/proto"
 )
 
 // getInfoTimeout is the maximum duration for GetInfo RPC calls.
