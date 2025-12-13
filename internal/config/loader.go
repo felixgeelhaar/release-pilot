@@ -162,8 +162,33 @@ func (l *Loader) configFileExists() bool {
 // autoDetectAI detects AI provider from environment variables and sets sensible defaults.
 // This enables zero-config AI usage when users have API keys in their environment.
 func (l *Loader) autoDetectAI() {
+	// Detect all available AI providers
+	detectedProviders := []string{}
+
+	if os.Getenv("OPENAI_API_KEY") != "" {
+		detectedProviders = append(detectedProviders, "openai (OPENAI_API_KEY)")
+	}
+	if os.Getenv("ANTHROPIC_API_KEY") != "" {
+		detectedProviders = append(detectedProviders, "anthropic (ANTHROPIC_API_KEY)")
+	}
+	if os.Getenv("GEMINI_API_KEY") != "" {
+		detectedProviders = append(detectedProviders, "gemini (GEMINI_API_KEY)")
+	}
+	if os.Getenv("AZURE_OPENAI_KEY") != "" && os.Getenv("AZURE_OPENAI_ENDPOINT") != "" {
+		detectedProviders = append(detectedProviders, "azure-openai (AZURE_OPENAI_KEY + AZURE_OPENAI_ENDPOINT)")
+	}
+	if os.Getenv("OLLAMA_HOST") != "" {
+		detectedProviders = append(detectedProviders, "ollama (OLLAMA_HOST)")
+	}
+
+	// No providers detected
+	if len(detectedProviders) == 0 {
+		return
+	}
+
 	// Check for AI provider API keys in order of preference
 	// If an API key is found, auto-enable AI with sensible defaults
+	selectedProvider := ""
 
 	if apiKey := os.Getenv("OPENAI_API_KEY"); apiKey != "" {
 		l.v.SetDefault("ai.enabled", true)
@@ -173,31 +198,24 @@ func (l *Loader) autoDetectAI() {
 		if l.v.GetString("ai.model") == "" {
 			l.v.SetDefault("ai.model", "gpt-4o-mini")
 		}
-		return
-	}
-
-	if apiKey := os.Getenv("ANTHROPIC_API_KEY"); apiKey != "" {
+		selectedProvider = "openai"
+	} else if apiKey := os.Getenv("ANTHROPIC_API_KEY"); apiKey != "" {
 		l.v.SetDefault("ai.enabled", true)
 		l.v.SetDefault("ai.provider", "anthropic")
 		l.v.SetDefault("ai.api_key", "${ANTHROPIC_API_KEY}")
 		if l.v.GetString("ai.model") == "" {
 			l.v.SetDefault("ai.model", "claude-sonnet-4")
 		}
-		return
-	}
-
-	if apiKey := os.Getenv("GEMINI_API_KEY"); apiKey != "" {
+		selectedProvider = "anthropic"
+	} else if apiKey := os.Getenv("GEMINI_API_KEY"); apiKey != "" {
 		l.v.SetDefault("ai.enabled", true)
 		l.v.SetDefault("ai.provider", "gemini")
 		l.v.SetDefault("ai.api_key", "${GEMINI_API_KEY}")
 		if l.v.GetString("ai.model") == "" {
 			l.v.SetDefault("ai.model", "gemini-2.0-flash-exp")
 		}
-		return
-	}
-
-	// Check for Azure OpenAI
-	if apiKey := os.Getenv("AZURE_OPENAI_KEY"); apiKey != "" {
+		selectedProvider = "gemini"
+	} else if apiKey := os.Getenv("AZURE_OPENAI_KEY"); apiKey != "" {
 		baseURL := os.Getenv("AZURE_OPENAI_ENDPOINT")
 		if baseURL != "" {
 			l.v.SetDefault("ai.enabled", true)
@@ -208,23 +226,24 @@ func (l *Loader) autoDetectAI() {
 				// User needs to specify deployment name
 				l.v.SetDefault("ai.model", "gpt-4")
 			}
-			return
+			selectedProvider = "azure-openai"
 		}
-	}
-
-	// Check for Ollama (local, no API key needed)
-	// Only enable if explicitly requested or if Ollama is running
-	if os.Getenv("OLLAMA_HOST") != "" {
+	} else if os.Getenv("OLLAMA_HOST") != "" {
 		l.v.SetDefault("ai.enabled", true)
 		l.v.SetDefault("ai.provider", "ollama")
 		l.v.SetDefault("ai.base_url", "${OLLAMA_HOST}")
 		if l.v.GetString("ai.model") == "" {
 			l.v.SetDefault("ai.model", "llama3.2")
 		}
-		return
+		selectedProvider = "ollama"
 	}
 
-	// No AI provider detected - leave AI disabled by default
+	// Warn if multiple AI providers detected
+	if len(detectedProviders) > 1 && selectedProvider != "" {
+		fmt.Fprintf(os.Stderr, "⚠️  Multiple AI provider API keys detected: %s\n", strings.Join(detectedProviders, ", "))
+		fmt.Fprintf(os.Stderr, "   Auto-selected '%s' based on priority order.\n", selectedProvider)
+		fmt.Fprintf(os.Stderr, "   To use a different provider, set RELEASE_PILOT_AI_PROVIDER or use a config file.\n")
+	}
 }
 
 // loadConfigFile loads the configuration file.
