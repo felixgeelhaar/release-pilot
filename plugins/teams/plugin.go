@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -413,6 +414,17 @@ func (p *TeamsPlugin) sendMessage(ctx context.Context, webhookURL string, msg Te
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		// Read response body for better error diagnostics (limit to 1KB)
+		limitedReader := io.LimitReader(resp.Body, 1024)
+		bodyBytes, readErr := io.ReadAll(limitedReader)
+		body := ""
+		if readErr == nil && len(bodyBytes) > 0 {
+			body = strings.TrimSpace(string(bodyBytes))
+		}
+
+		if body != "" {
+			return fmt.Errorf("teams returned status %d: %s", resp.StatusCode, body)
+		}
 		return fmt.Errorf("teams returned status %d", resp.StatusCode)
 	}
 

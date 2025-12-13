@@ -306,6 +306,7 @@ func validateYAML(content string) error {
 }
 
 // extractProjectName extracts the project name from a git repository URL.
+// Sanitizes the name to prevent template injection attacks.
 func extractProjectName(repoURL string) string {
 	// Remove .git suffix
 	repoURL = strings.TrimSuffix(repoURL, ".git")
@@ -328,9 +329,21 @@ func extractProjectName(repoURL string) string {
 
 	// Extract last path component
 	parts := strings.Split(repoURL, "/")
+	var name string
 	if len(parts) > 0 {
-		return parts[len(parts)-1]
+		name = parts[len(parts)-1]
+	} else {
+		name = "my-project"
 	}
 
-	return "my-project"
+	// Sanitize: only allow alphanumeric, hyphen, underscore, and dot
+	// This prevents template injection and special character issues
+	sanitized := regexp.MustCompile(`[^a-zA-Z0-9_.-]`).ReplaceAllString(name, "")
+
+	// If sanitization removed everything, use default
+	if sanitized == "" || sanitized == "." || sanitized == ".." {
+		return "my-project"
+	}
+
+	return sanitized
 }

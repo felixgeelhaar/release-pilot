@@ -256,8 +256,10 @@ func (w *Wizard) saveConfiguration() error {
 		// TODO: Ask user for confirmation
 	}
 
-	// Write configuration file
-	if err := os.WriteFile(w.configPath, []byte(w.config), 0644); err != nil {
+	// Write configuration file with restricted permissions (owner read/write only)
+	// Use 0600 to prevent world-readable access to config files that may contain
+	// sensitive information like webhook URLs or API key references
+	if err := os.WriteFile(w.configPath, []byte(w.config), 0600); err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
 	}
 
