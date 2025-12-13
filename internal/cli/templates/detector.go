@@ -92,6 +92,33 @@ type Detection struct {
 	SuggestedTemplate string
 }
 
+// ignoredDirs is a list of directories that should be excluded from scanning.
+// These are typically large vendor directories, build outputs, or VCS metadata.
+var ignoredDirs = map[string]bool{
+	"node_modules":  true, // Node.js dependencies
+	"vendor":        true, // Go/PHP dependencies
+	".git":          true, // Git metadata
+	".svn":          true, // SVN metadata
+	".hg":           true, // Mercurial metadata
+	"dist":          true, // Build output
+	"build":         true, // Build output
+	"target":        true, // Rust/Java build output
+	".next":         true, // Next.js cache
+	".nuxt":         true, // Nuxt.js cache
+	"coverage":      true, // Test coverage
+	".nyc_output":   true, // NYC coverage
+	"venv":          true, // Python virtual env
+	".venv":         true, // Python virtual env
+	"__pycache__":   true, // Python cache
+	".pytest_cache": true, // Pytest cache
+	".tox":          true, // Tox testing
+	".mypy_cache":   true, // MyPy cache
+	".cache":        true, // Generic cache
+	".terraform":    true, // Terraform state
+	".idea":         true, // JetBrains IDE
+	".vscode":       true, // VS Code
+}
+
 // Detector detects project characteristics by scanning files.
 type Detector struct {
 	basePath string
@@ -493,6 +520,10 @@ func (d *Detector) hasFilesWithExt(ext string, dirs ...string) bool {
 		_ = filepath.Walk(fullPath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return nil
+			}
+			// Skip ignored directories
+			if info.IsDir() && ignoredDirs[info.Name()] {
+				return filepath.SkipDir
 			}
 			if !info.IsDir() && strings.HasSuffix(info.Name(), ext) {
 				found = true
