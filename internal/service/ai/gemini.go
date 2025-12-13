@@ -55,7 +55,8 @@ func NewGeminiService(cfg ServiceConfig) (Service, error) {
 		APIKey: cfg.APIKey,
 	})
 	if err != nil {
-		return nil, errors.AIWrap(err, "NewGeminiService", "failed to create Gemini client")
+		// Use AIWrapSafe to redact any API keys that might appear in SDK error messages
+		return nil, errors.AIWrapSafe(err, "NewGeminiService", "failed to create Gemini client")
 	}
 
 	prompts := newDefaultPromptTemplates()
