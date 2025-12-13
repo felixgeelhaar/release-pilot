@@ -61,6 +61,12 @@ func (l *Loader) Load() (*Config, error) {
 	// Set defaults
 	l.setDefaults()
 
+	// Auto-detect AI provider from environment if no config file exists
+	configFileFound := l.configFileExists()
+	if !configFileFound {
+		l.autoDetectAI()
+	}
+
 	// Load config file
 	if err := l.loadConfigFile(); err != nil {
 		return nil, rperrors.ConfigWrap(err, op, "failed to load config file")
@@ -128,6 +134,97 @@ func (l *Loader) setDefaults() {
 	l.v.SetDefault("output.verbose", defaults.Output.Verbose)
 	l.v.SetDefault("output.quiet", defaults.Output.Quiet)
 	l.v.SetDefault("output.log_level", defaults.Output.LogLevel)
+}
+
+// configFileExists checks if a config file exists in search paths.
+func (l *Loader) configFileExists() bool {
+	// Check explicit path first
+	if l.configPath != "" {
+		_, err := os.Stat(l.configPath)
+		return err == nil
+	}
+
+	// Search for config file in paths
+	for _, searchPath := range l.searchPaths {
+		for _, name := range ConfigFileNames {
+			for _, ext := range ConfigFileExtensions {
+				configFile := filepath.Join(searchPath, name+"."+ext)
+				if _, err := os.Stat(configFile); err == nil {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+// autoDetectAI detects AI provider from environment variables and sets sensible defaults.
+// This enables zero-config AI usage when users have API keys in their environment.
+func (l *Loader) autoDetectAI() {
+	// Check for AI provider API keys in order of preference
+	// If an API key is found, auto-enable AI with sensible defaults
+
+	if apiKey := os.Getenv("OPENAI_API_KEY"); apiKey != "" {
+		l.v.SetDefault("ai.enabled", true)
+		l.v.SetDefault("ai.provider", "openai")
+		l.v.SetDefault("ai.api_key", "${OPENAI_API_KEY}")
+		// Use fast model by default for quick responses
+		if l.v.GetString("ai.model") == "" {
+			l.v.SetDefault("ai.model", "gpt-4o-mini")
+		}
+		return
+	}
+
+	if apiKey := os.Getenv("ANTHROPIC_API_KEY"); apiKey != "" {
+		l.v.SetDefault("ai.enabled", true)
+		l.v.SetDefault("ai.provider", "anthropic")
+		l.v.SetDefault("ai.api_key", "${ANTHROPIC_API_KEY}")
+		if l.v.GetString("ai.model") == "" {
+			l.v.SetDefault("ai.model", "claude-sonnet-4")
+		}
+		return
+	}
+
+	if apiKey := os.Getenv("GEMINI_API_KEY"); apiKey != "" {
+		l.v.SetDefault("ai.enabled", true)
+		l.v.SetDefault("ai.provider", "gemini")
+		l.v.SetDefault("ai.api_key", "${GEMINI_API_KEY}")
+		if l.v.GetString("ai.model") == "" {
+			l.v.SetDefault("ai.model", "gemini-2.0-flash-exp")
+		}
+		return
+	}
+
+	// Check for Azure OpenAI
+	if apiKey := os.Getenv("AZURE_OPENAI_KEY"); apiKey != "" {
+		baseURL := os.Getenv("AZURE_OPENAI_ENDPOINT")
+		if baseURL != "" {
+			l.v.SetDefault("ai.enabled", true)
+			l.v.SetDefault("ai.provider", "azure-openai")
+			l.v.SetDefault("ai.api_key", "${AZURE_OPENAI_KEY}")
+			l.v.SetDefault("ai.base_url", "${AZURE_OPENAI_ENDPOINT}")
+			if l.v.GetString("ai.model") == "" {
+				// User needs to specify deployment name
+				l.v.SetDefault("ai.model", "gpt-4")
+			}
+			return
+		}
+	}
+
+	// Check for Ollama (local, no API key needed)
+	// Only enable if explicitly requested or if Ollama is running
+	if os.Getenv("OLLAMA_HOST") != "" {
+		l.v.SetDefault("ai.enabled", true)
+		l.v.SetDefault("ai.provider", "ollama")
+		l.v.SetDefault("ai.base_url", "${OLLAMA_HOST}")
+		if l.v.GetString("ai.model") == "" {
+			l.v.SetDefault("ai.model", "llama3.2")
+		}
+		return
+	}
+
+	// No AI provider detected - leave AI disabled by default
 }
 
 // loadConfigFile loads the configuration file.
