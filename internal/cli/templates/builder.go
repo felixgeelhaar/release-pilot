@@ -10,6 +10,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Pre-compiled regex patterns for performance
+var (
+	// projectNameSanitizeRegex removes characters not allowed in project names.
+	// Only allows: alphanumeric, hyphen, underscore, and dot.
+	// This prevents template injection and special character issues.
+	projectNameSanitizeRegex = regexp.MustCompile(`[^a-zA-Z0-9_.-]`)
+)
+
 // TemplateData holds all data available to templates during rendering.
 type TemplateData struct {
 	// Project information
@@ -337,9 +345,8 @@ func extractProjectName(repoURL string) string {
 		name = "my-project"
 	}
 
-	// Sanitize: only allow alphanumeric, hyphen, underscore, and dot
-	// This prevents template injection and special character issues
-	sanitized := regexp.MustCompile(`[^a-zA-Z0-9_.-]`).ReplaceAllString(name, "")
+	// Sanitize using pre-compiled regex
+	sanitized := projectNameSanitizeRegex.ReplaceAllString(name, "")
 
 	// If sanitization removed everything, use default
 	if sanitized == "" || sanitized == "." || sanitized == ".." {
