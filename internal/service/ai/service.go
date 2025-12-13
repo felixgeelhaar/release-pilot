@@ -88,12 +88,14 @@ func DefaultGenerateOptions() GenerateOptions {
 
 // ServiceConfig configures the AI service.
 type ServiceConfig struct {
-	// Provider is the AI provider (openai).
+	// Provider is the AI provider (openai, anthropic, gemini, ollama, azure-openai).
 	Provider string
 	// APIKey is the API key for the provider.
 	APIKey string
 	// BaseURL is the base URL for the API (for custom endpoints).
 	BaseURL string
+	// APIVersion is the API version (required for Azure OpenAI).
+	APIVersion string
 	// Model is the model to use.
 	Model string
 	// MaxTokens is the maximum tokens for responses.
@@ -163,6 +165,13 @@ func WithBaseURL(url string) ServiceOption {
 	}
 }
 
+// WithAPIVersion sets the API version (required for Azure OpenAI).
+func WithAPIVersion(version string) ServiceOption {
+	return func(cfg *ServiceConfig) {
+		cfg.APIVersion = version
+	}
+}
+
 // WithModel sets the model.
 func WithModel(model string) ServiceOption {
 	return func(cfg *ServiceConfig) {
@@ -220,12 +229,14 @@ func NewService(opts ...ServiceOption) (Service, error) {
 	}
 
 	switch cfg.Provider {
-	case "openai":
+	case "openai", "azure-openai":
 		return NewOpenAIService(cfg)
 	case "ollama":
 		return NewOllamaService(cfg)
 	case "anthropic", "claude":
 		return NewAnthropicService(cfg)
+	case "gemini":
+		return NewGeminiService(cfg)
 	default:
 		return NewOpenAIService(cfg)
 	}

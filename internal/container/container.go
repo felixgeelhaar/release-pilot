@@ -180,6 +180,10 @@ func (c *DDDContainer) initAIService() (ai.Service, error) {
 		opts = append(opts, ai.WithBaseURL(c.config.AI.BaseURL))
 	}
 
+	if c.config.AI.APIVersion != "" {
+		opts = append(opts, ai.WithAPIVersion(c.config.AI.APIVersion))
+	}
+
 	if c.config.AI.MaxTokens > 0 {
 		opts = append(opts, ai.WithMaxTokens(c.config.AI.MaxTokens))
 	}

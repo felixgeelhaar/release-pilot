@@ -132,7 +132,7 @@ func (v *Validator) validateAI(cfg AIConfig) {
 	}
 
 	// Validate provider
-	validProviders := []string{"openai"}
+	validProviders := []string{"openai", "anthropic", "claude", "ollama", "gemini"}
 	if !slices.Contains(validProviders, cfg.Provider) {
 		v.errors.Addf("ai.provider: must be one of %v, got %q", validProviders, cfg.Provider)
 	}
@@ -144,9 +144,25 @@ func (v *Validator) validateAI(cfg AIConfig) {
 
 	// Validate API key is provided (after env expansion)
 	if cfg.APIKey == "" {
-		// Check if it's provided via environment variable
-		if os.Getenv("OPENAI_API_KEY") == "" && os.Getenv("RELEASE_PILOT_AI_API_KEY") == "" {
-			v.errors.Addf("ai.api_key: required when AI is enabled (set via config or OPENAI_API_KEY env var)")
+		// Check if it's provided via environment variable (provider-specific or generic)
+		providerEnvVars := map[string]string{
+			"openai":    "OPENAI_API_KEY",
+			"anthropic": "ANTHROPIC_API_KEY",
+			"claude":    "ANTHROPIC_API_KEY",
+			"gemini":    "GEMINI_API_KEY",
+			"ollama":    "", // Ollama doesn't require an API key
+		}
+
+		envVar := providerEnvVars[cfg.Provider]
+		genericEnvVar := "RELEASE_PILOT_AI_API_KEY"
+
+		// Ollama doesn't require an API key
+		if cfg.Provider == "ollama" {
+			return
+		}
+
+		if os.Getenv(envVar) == "" && os.Getenv(genericEnvVar) == "" {
+			v.errors.Addf("ai.api_key: required when AI is enabled (set via config or %s env var)", envVar)
 		}
 	}
 

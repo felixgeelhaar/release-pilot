@@ -18,6 +18,9 @@ import (
 // Also supports newer project-scoped keys (sk-proj-) and service account keys.
 var openaiKeyPattern = regexp.MustCompile(`^sk-(?:proj-)?[a-zA-Z0-9_-]{20,}$`)
 
+// Azure OpenAI keys are 32 character hexadecimal strings.
+var azureKeyPattern = regexp.MustCompile(`^[a-fA-F0-9]{32}$`)
+
 // openAIService implements the AI Service interface using OpenAI.
 type openAIService struct {
 	client     *openai.Client
@@ -27,18 +30,44 @@ type openAIService struct {
 }
 
 // NewOpenAIService creates a new OpenAI-based AI service.
+// Also supports Azure OpenAI when provider is "azure-openai" or BaseURL contains ".openai.azure.com".
 func NewOpenAIService(cfg ServiceConfig) (Service, error) {
 	if cfg.APIKey == "" {
 		return &noopService{}, nil
 	}
 
-	// Validate API key format to fail fast and avoid leaking invalid keys in error messages
-	if !openaiKeyPattern.MatchString(cfg.APIKey) {
-		return nil, errors.AI("NewOpenAIService", "invalid OpenAI API key format")
+	// Detect Azure OpenAI mode
+	isAzure := cfg.Provider == "azure-openai" || strings.Contains(cfg.BaseURL, ".openai.azure.com")
+
+	// Validate API key format based on provider type
+	if isAzure {
+		if !azureKeyPattern.MatchString(cfg.APIKey) {
+			return nil, errors.AI("NewOpenAIService", "invalid Azure OpenAI API key format (expected 32-character hex string)")
+		}
+	} else {
+		if !openaiKeyPattern.MatchString(cfg.APIKey) {
+			return nil, errors.AI("NewOpenAIService", "invalid OpenAI API key format")
+		}
 	}
 
+	// Create client configuration
 	clientConfig := openai.DefaultConfig(cfg.APIKey)
-	if cfg.BaseURL != "" {
+
+	// Configure for Azure OpenAI if detected
+	if isAzure {
+		clientConfig.APIType = openai.APITypeAzure
+		if cfg.BaseURL != "" {
+			clientConfig.BaseURL = cfg.BaseURL
+		}
+		// Azure OpenAI requires an API version
+		if cfg.APIVersion != "" {
+			clientConfig.APIVersion = cfg.APIVersion
+		} else {
+			// Use a reasonable default if not specified
+			clientConfig.APIVersion = "2024-02-15-preview"
+		}
+	} else if cfg.BaseURL != "" {
+		// For standard OpenAI with custom base URL
 		clientConfig.BaseURL = cfg.BaseURL
 	}
 
