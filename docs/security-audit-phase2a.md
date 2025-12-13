@@ -823,19 +823,26 @@ var geminiKeyPattern = regexp.MustCompile(`^AIza[a-zA-Z0-9_-]{35,}$`)
 **Count:** 0
 
 ### Medium (CVSS 4.0-6.9)
-**Count:** 2 (1 resolved)
+**Count:** 0 (All 3 resolved)
 
-1. **M1: Gemini API Key in Client Config** (CVSS 4.3)
-   - **Risk:** API key could leak in SDK error messages
-   - **Mitigation:** Verify GenAI SDK doesn't log credentials
+1. ~~**M1: Gemini API Key in Client Config**~~ ✅ RESOLVED (CVSS 4.3)
+   - **Status:** IMPLEMENTED - API key redaction pattern added
+   - **Implementation:**
+     - Added Gemini API key pattern to `sensitivePatterns` in `internal/errors/errors.go`
+     - Changed `AIWrap` to `AIWrapSafe` in `internal/service/ai/gemini.go` (line 59)
+     - Ensures API keys are redacted from error messages
 
 2. ~~**M2: Unvalidated EDITOR Environment Variable**~~ ✅ RESOLVED (CVSS 6.2)
    - **Status:** IMPLEMENTED - Editor allowlist validation already in place
    - **Implementation:** Lines 289-325 in `internal/cli/approve.go`
 
-3. **M3: Shell Execution in PyPI Build Command** (CVSS 3.9)
-   - **Risk:** Config-based command injection
-   - **Mitigation:** Already mitigated by config file requirement
+3. ~~**M3: Shell Execution in PyPI Build Command**~~ ✅ RESOLVED (CVSS 3.9)
+   - **Status:** IMPLEMENTED - Defense-in-depth validation added
+   - **Implementation:**
+     - Added `validateBuildCommand()` in `plugins/pypi/plugin.go` (lines 476-540)
+     - Validates against dangerous shell metacharacters (;, &, |, `, $, etc.)
+     - Blocks path traversal patterns and suspicious commands
+     - Whitelists only known-safe Python build tools
 
 ### Low (CVSS 0.1-3.9)
 **Count:** 5
@@ -864,16 +871,19 @@ var geminiKeyPattern = regexp.MustCompile(`^AIza[a-zA-Z0-9_-]{35,}$`)
 
 This recommendation was already implemented when the audit was conducted.
 
-#### R2: Verify Gemini SDK Credential Handling
-**Action:** Review `google.golang.org/genai` SDK source to confirm API keys are not logged.
-**Alternative:** Use environment-based auth if supported.
+#### ~~R2: Verify Gemini SDK Credential Handling~~ ✅ COMPLETED
+**Status:** IMPLEMENTED - Defense-in-depth API key protection added
+- ✅ Added Gemini API key redaction pattern to `internal/errors/errors.go`
+- ✅ Changed error wrapping to use `AIWrapSafe` in `internal/service/ai/gemini.go` (line 59)
+- ✅ Ensures API keys are automatically redacted from all error messages
+- ✅ Protects against potential SDK error message leaks
 
 ### Priority 2 (Short-term - Low Severity)
 
-#### R3: Add Gemini API Key to Redaction Patterns
-**File:** `internal/errors/errors.go`
+#### ~~R3: Add Gemini API Key to Redaction Patterns~~ ✅ COMPLETED
+**Status:** IMPLEMENTED
+**File:** `internal/errors/errors.go` (line 466)
 ```go
-// Add to sensitivePatterns array (after line 473)
 // Gemini API keys: AIza...
 regexp.MustCompile(`AIza[a-zA-Z0-9_-]{35,}`),
 ```
@@ -934,18 +944,25 @@ func NewConfigParserWithACL(config map[string]any, allowedFields []string) *Conf
 }
 ```
 
-#### R8: Add Build Command Validation Warning
-**File:** `plugins/pypi/plugin.go` (validation)
+#### ~~R8: Add Build Command Validation Warning~~ ✅ COMPLETED
+**Status:** IMPLEMENTED - Comprehensive build command validation added
+**File:** `plugins/pypi/plugin.go` (lines 476-540)
+
+Defense-in-depth implementation with:
+- ✅ Dangerous shell metacharacter detection (;, &, |, `, $, (, ), <, >, \n, \r)
+- ✅ Path traversal pattern blocking (..)
+- ✅ Suspicious command pattern detection (rm, curl, wget, nc, eval, exec, /dev/, /proc/)
+- ✅ Whitelist-based validation (only allows known Python build tools)
+- ✅ Called before every build command execution (line 130)
+
 ```go
-// In Validate method
-if cfg.BuildCommand != "" {
-    suspicious := []string{";", "&&", "||", "|", "`", "$("}
-    for _, pattern := range suspicious {
-        if strings.Contains(cfg.BuildCommand, pattern) {
-            vb.AddWarning("build_command",
-                "Command contains shell metacharacters. Ensure command is from trusted source.")
-        }
-    }
+// Implemented validateBuildCommand() with comprehensive checks
+func (p *PyPIPlugin) validateBuildCommand(cmd string) error {
+    // Multiple layers of validation including:
+    // - Shell metacharacter detection
+    // - Path traversal prevention
+    // - Suspicious pattern detection
+    // - Whitelist validation for build tools
 }
 ```
 
