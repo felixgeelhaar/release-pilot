@@ -13,11 +13,11 @@ import (
 type Language string
 
 const (
-	LanguageGo     Language = "go"
-	LanguageNode   Language = "node"
-	LanguagePython Language = "python"
-	LanguageRust   Language = "rust"
-	LanguageRuby   Language = "ruby"
+	LanguageGo      Language = "go"
+	LanguageNode    Language = "node"
+	LanguagePython  Language = "python"
+	LanguageRust    Language = "rust"
+	LanguageRuby    Language = "ruby"
 	LanguageUnknown Language = "unknown"
 )
 
@@ -25,10 +25,10 @@ const (
 type Platform string
 
 const (
-	PlatformDocker    Platform = "docker"
+	PlatformDocker     Platform = "docker"
 	PlatformKubernetes Platform = "kubernetes"
 	PlatformServerless Platform = "serverless"
-	PlatformNative    Platform = "native"
+	PlatformNative     Platform = "native"
 )
 
 // ProjectType represents the detected project type.
@@ -36,14 +36,14 @@ type ProjectType string
 
 const (
 	ProjectTypeOpenSource ProjectType = "opensource"
-	ProjectTypeSaaS      ProjectType = "saas"
-	ProjectTypeAPI       ProjectType = "api"
-	ProjectTypeCLI       ProjectType = "cli"
-	ProjectTypeLibrary   ProjectType = "library"
-	ProjectTypeMobile    ProjectType = "mobile"
-	ProjectTypeContainer ProjectType = "container"
-	ProjectTypeMonorepo  ProjectType = "monorepo"
-	ProjectTypeUnknown   ProjectType = "unknown"
+	ProjectTypeSaaS       ProjectType = "saas"
+	ProjectTypeAPI        ProjectType = "api"
+	ProjectTypeCLI        ProjectType = "cli"
+	ProjectTypeLibrary    ProjectType = "library"
+	ProjectTypeMobile     ProjectType = "mobile"
+	ProjectTypeContainer  ProjectType = "container"
+	ProjectTypeMonorepo   ProjectType = "monorepo"
+	ProjectTypeUnknown    ProjectType = "unknown"
 )
 
 // Detection represents the result of project detection.
@@ -470,6 +470,7 @@ func (d *Detector) suggestTemplate(detection *Detection) {
 	}
 
 	// Combine language and project type
+	//nolint:staticcheck // Switching on language first is clearer than switching on project type
 	switch detection.Language {
 	case LanguageGo:
 		if detection.ProjectType == ProjectTypeAPI {

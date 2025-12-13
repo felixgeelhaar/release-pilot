@@ -24,13 +24,13 @@ type ReviewModel struct {
 }
 
 type reviewKeyMap struct {
-	Approve key.Binding
-	Edit    key.Binding
-	Back    key.Binding
-	Quit    key.Binding
-	Up      key.Binding
-	Down    key.Binding
-	PageUp  key.Binding
+	Approve  key.Binding
+	Edit     key.Binding
+	Back     key.Binding
+	Quit     key.Binding
+	Up       key.Binding
+	Down     key.Binding
+	PageUp   key.Binding
 	PageDown key.Binding
 }
 

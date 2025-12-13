@@ -121,21 +121,21 @@ type Fact struct {
 
 // Container represents a container in an Adaptive Card.
 type Container struct {
-	Type   string        `json:"type"`
-	Items  []interface{} `json:"items"`
-	Style  string        `json:"style,omitempty"`
-	Bleed  bool          `json:"bleed,omitempty"`
+	Type  string        `json:"type"`
+	Items []interface{} `json:"items"`
+	Style string        `json:"style,omitempty"`
+	Bleed bool          `json:"bleed,omitempty"`
 }
 
 // TeamsMessage represents a Teams message payload with MessageCard format.
 type TeamsMessage struct {
-	Type       string         `json:"@type"`
-	Context    string         `json:"@context"`
-	ThemeColor string         `json:"themeColor,omitempty"`
-	Summary    string         `json:"summary"`
-	Sections   []Section      `json:"sections,omitempty"`
-	Text       string         `json:"text,omitempty"`
-	Attachments []Attachment  `json:"attachments,omitempty"`
+	Type        string       `json:"@type"`
+	Context     string       `json:"@context"`
+	ThemeColor  string       `json:"themeColor,omitempty"`
+	Summary     string       `json:"summary"`
+	Sections    []Section    `json:"sections,omitempty"`
+	Text        string       `json:"text,omitempty"`
+	Attachments []Attachment `json:"attachments,omitempty"`
 }
 
 // Section represents a section in a MessageCard.

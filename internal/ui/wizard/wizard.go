@@ -251,9 +251,9 @@ func (w *Wizard) buildConfiguration() error {
 // saveConfiguration saves the configuration to disk.
 func (w *Wizard) saveConfiguration() error {
 	// Check if file already exists
+	//nolint:staticcheck // TODO: Ask user for confirmation before overwriting
 	if _, err := os.Stat(w.configPath); err == nil {
 		// File exists - for now, we'll overwrite
-		// TODO: Ask user for confirmation
 	}
 
 	// Write configuration file with restricted permissions (owner read/write only)

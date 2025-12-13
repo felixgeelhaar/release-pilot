@@ -2,8 +2,6 @@
 package wizard
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -149,29 +147,6 @@ func wizardWelcome() string {
 	return "Welcome to the ReleasePilot initialization wizard!\n\n" +
 		"This wizard will help you set up ReleasePilot in less than 2 minutes.\n" +
 		"We'll auto-detect your project type and generate a customized configuration."
-}
-
-// wizardSteps returns the total number of wizard steps.
-func wizardSteps() int {
-	return 8
-}
-
-// renderProgressBar renders a progress bar for the wizard.
-func renderProgressBar(current, total int, styles wizardStyles) string {
-	percent := float64(current) / float64(total)
-	width := 50
-	filled := int(float64(width) * percent)
-	empty := width - filled
-
-	bar := ""
-	for i := 0; i < filled; i++ {
-		bar += "█"
-	}
-	for i := 0; i < empty; i++ {
-		bar += "░"
-	}
-
-	return styles.progressBar.Render(bar) + styles.subtle.Render(" Step ") + styles.bold.Render(fmt.Sprintf("%d/%d", current, total))
 }
 
 // renderStepIndicator renders a step indicator showing which step the user is on.

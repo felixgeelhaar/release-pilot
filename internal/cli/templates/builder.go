@@ -26,12 +26,12 @@ type TemplateData struct {
 	GitBranch     string
 
 	// Language and platform
-	Language        string
-	Platform        string
-	ProjectType     string
-	PackageManager  string
-	BuildTool       string
-	IsMonorepo      bool
+	Language       string
+	Platform       string
+	ProjectType    string
+	PackageManager string
+	BuildTool      string
+	IsMonorepo     bool
 
 	// AI configuration
 	AIEnabled  bool
@@ -42,18 +42,18 @@ type TemplateData struct {
 	GitSign bool
 
 	// Plugin enablement
-	EnableGitHub       bool
-	EnableGitLab       bool
-	EnableSlack        bool
-	EnableDiscord      bool
-	EnableTeams        bool
-	EnableJira         bool
-	EnableLaunchNotes  bool
-	EnableHomebrew     bool
-	EnableDocker       bool
-	EnableNPM          bool
-	EnablePyPI         bool
-	EnableCargo        bool
+	EnableGitHub      bool
+	EnableGitLab      bool
+	EnableSlack       bool
+	EnableDiscord     bool
+	EnableTeams       bool
+	EnableJira        bool
+	EnableLaunchNotes bool
+	EnableHomebrew    bool
+	EnableDocker      bool
+	EnableNPM         bool
+	EnablePyPI        bool
+	EnableCargo       bool
 
 	// Plugin-specific configuration
 	HomebrewTap       string
@@ -81,7 +81,7 @@ func NewBuilder(registry *Registry, detection *Detection) *Builder {
 	return &Builder{
 		registry:  registry,
 		detection: detection,
-		data:      &TemplateData{
+		data: &TemplateData{
 			Custom: make(map[string]interface{}),
 		},
 	}

@@ -149,6 +149,7 @@ func (c *DDDContainer) initInfrastructure(ctx context.Context) error {
 
 	// Initialize AI service (optional)
 	if c.config.AI.Enabled {
+		//nolint:contextcheck // AI service creation doesn't require context; context passed to API calls
 		c.aiService, err = c.initAIService()
 		if err != nil {
 			// AI service failure is non-fatal
