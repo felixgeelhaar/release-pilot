@@ -12,6 +12,7 @@ import (
 
 	"github.com/felixgeelhaar/release-pilot/internal/config"
 	"github.com/felixgeelhaar/release-pilot/internal/service/git"
+	"github.com/felixgeelhaar/release-pilot/internal/ui/wizard"
 )
 
 var (
@@ -28,9 +29,6 @@ func init() {
 
 // runInit implements the init command.
 func runInit(cmd *cobra.Command, args []string) error {
-	printTitle("ReleasePilot Setup")
-	fmt.Println()
-
 	// Check for existing config
 	existingConfig, _ := config.FindConfigFile(".")
 	if existingConfig != "" && !initForce {
@@ -38,6 +36,37 @@ func runInit(cmd *cobra.Command, args []string) error {
 		printInfo("Use --force to overwrite")
 		return nil
 	}
+
+	// Interactive wizard mode
+	if initInteractive {
+		result, err := wizard.RunWizard(".")
+		if err != nil {
+			return fmt.Errorf("wizard failed: %w", err)
+		}
+
+		// Handle wizard result
+		switch result.State {
+		case wizard.StateSuccess:
+			// Wizard completed successfully, config already saved
+			return nil
+
+		case wizard.StateQuit:
+			// User quit the wizard
+			printInfo("Setup cancelled")
+			return nil
+
+		case wizard.StateError:
+			// Wizard encountered an error
+			return fmt.Errorf("wizard error: %w", result.Error)
+
+		default:
+			return fmt.Errorf("unexpected wizard state: %v", result.State)
+		}
+	}
+
+	// Non-interactive mode: fall back to old behavior
+	printTitle("ReleasePilot Setup")
+	fmt.Println()
 
 	// Determine config file name
 	configFile := "release.config.yaml"
@@ -52,13 +81,6 @@ func runInit(cmd *cobra.Command, args []string) error {
 	if err := detectRepoSettings(cfg); err != nil {
 		if verbose {
 			printWarning(fmt.Sprintf("Could not detect repository settings: %v", err))
-		}
-	}
-
-	// Interactive setup
-	if initInteractive {
-		if err := runInteractiveSetup(cfg); err != nil {
-			return err
 		}
 	}
 
