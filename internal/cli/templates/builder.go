@@ -4,6 +4,7 @@ package templates
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v3"
