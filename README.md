@@ -41,6 +41,18 @@ go build -o release-pilot ./cmd/release-pilot
 docker pull ghcr.io/felixgeelhaar/release-pilot:latest
 ```
 
+### GitHub Action (Recommended for CI/CD)
+
+The easiest way to use ReleasePilot in your CI/CD pipeline:
+
+```yaml
+- uses: felixgeelhaar/release-pilot-action@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**No Go, Make, or build tools required!** The action automatically downloads the correct binary, verifies checksums, and handles the entire release workflow. See the [GitHub Action documentation](https://github.com/felixgeelhaar/release-pilot-action) for details.
+
 ## Quick Start
 
 1. Initialize ReleasePilot in your project:
